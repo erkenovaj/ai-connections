@@ -52,7 +52,7 @@
 ## Ссылка на диалог с LLM: https://chat.deepseek.com/share/j5577budapxg9b528r 
 (там есть ошибки и опечатки, не смотрите на них, пожалуйста)
 
-## Гит-репозиторий: 
+## Гит-репозиторий: https://github.com/erkenovaj/ai-connections
 
 **Инструкция по запуску**:
 ```bash
