@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Safety Connections</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AI Safety Connections - EXPERT MODE</h1>
+            <p>Create three groups of four that share a common theme. Many concepts fit multiple categories. The dog is watching...</p>
+        </div>
+
+        <div class="game-info">
+            <div class="mistakes">
+                <div class="mistake-dot"></div>
+                <div class="mistake-dot"></div>
+                <div class="mistake-dot"></div>
+                <div class="mistake-dot"></div>
+            </div>
+            <div class="game-controls">
+                <button class="shuffle-btn">Shuffle</button>
+                <button class="hints-toggle-btn">🔍 Hints: ON</button>
+                <button class="dictionary-btn">Dictionary</button>
+                <button class="guide-btn">Guide</button>
+            </div>
+        </div>
+
+        <div class="game-board" id="game-board">
+            <!-- 16 concepts will be inserted here by JavaScript -->
+        </div>
+
+        <div class="category-slots" id="category-slots">
+            <div class="category-slot" data-difficulty="easy">
+                <div class="category-name">Category 1</div>
+                <div class="category-concepts"></div>
+            </div>
+            <div class="category-slot" data-difficulty="medium">
+                <div class="category-name">Category 2</div>
+                <div class="category-concepts"></div>
+            </div>
+            <div class="category-slot" data-difficulty="hard">
+                <div class="category-name">Category 3</div>
+                <div class="category-concepts"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="submit-btn" id="submit-btn" disabled>Submit</button>
+            <button class="deselect-btn" id="deselect-btn">Deselect All</button>
+            <button class="new-game-btn" id="new-game-btn">New Game</button>
+        </div>
+    </div>
+
+    <!-- Tooltip element -->
+    <div class="concept-tooltip" id="concept-tooltip"></div>
+
+    <!-- Modals -->
+    <div class="modal" id="win-modal">
+        <div class="modal-content">
+            <h2>🎉 Puzzle Complete!</h2>
+            <p>You've successfully grouped all the AI safety concepts! The dog is very proud! 🐕</p>
+            <button class="new-game-btn" onclick="document.getElementById('win-modal').style.display='none'">Play Again</button>
+        </div>
+    </div>
+
+    <div class="modal" id="lose-modal">
+        <div class="modal-content">
+            <h2>Game Over</h2>
+            <p>You've used all your attempts. The dog is disappointed but unharmed.</p>
+            <div id="solution-container"></div>
+            <button class="new-game-btn" onclick="document.getElementById('lose-modal').style.display='none'">Try Again</button>
+        </div>
+    </div>
+
+    <div class="modal" id="dictionary-modal">
+        <div class="modal-content">
+            <h2>AI Safety Dictionary</h2>
+            <p>Definitions of all concepts in the game:</p>
+            <div class="concept-list" id="dictionary-list"></div>
+            <button class="new-game-btn" onclick="document.getElementById('dictionary-modal').style.display='none'" style="margin-top: 20px;">Close</button>
+        </div>
+    </div>
+
+    <div class="modal" id="guide-modal">
+        <div class="modal-content">
+            <h2>How to Play AI Safety Connections</h2>
+            <div class="guide-content">
+                <div class="guide-section">
+                    <h3>🎯 Objective</h3>
+                    <p>Find 3 groups of 4 concepts that share a common theme. Each group corresponds to a category with increasing difficulty.</p>
+                </div>
+
+                <div class="guide-section">
+                    <h3>🕹️ Gameplay</h3>
+                    <ul>
+                        <li><strong>Select 4 tiles</strong> that you think belong to the same category</li>
+                        <li><strong>Click Submit</strong> to check if your grouping is correct</li>
+                        <li><strong>Be careful!</strong> Many concepts can fit multiple categories</li>
+                        <li><strong>You have 4 attempts</strong> - use them wisely!</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h3>🎨 Difficulty Levels</h3>
+                    <ul>
+                        <li><span class="easy-badge">EASY</span> - More obvious connections</li>
+                        <li><span class="medium-badge">MEDIUM</span> - Requires some AI safety knowledge</li>
+                        <li><span class="hard-badge">HARD</span> - Subtle philosophical connections</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h3>🐕 The AI Safety Dog</h3>
+                    <p>Your canine companion reacts to your progress:</p>
+                    <ul>
+                        <li>🐕 <strong>Happy</strong> - When you're doing well</li>
+                        <li>😟 <strong>Worried</strong> - When you make mistakes</li>
+                        <li>🎉 <strong>Celebrating</strong> - When you solve categories</li>
+                        <li>😴 <strong>Sleeping</strong> - When the game ends</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h3>💡 Tips</h3>
+                    <ul>
+                        <li>Hover over concepts to see their definitions</li>
+                        <li>Use the Dictionary for quick reference</li>
+                        <li>Look for both technical and thematic connections</li>
+                        <li>Some concepts might fit multiple plausible groups</li>
+                        <li>Think about both the meaning and context of each term</li>
+                    </ul>
+                </div>
+            </div>
+            <button class="new-game-btn" onclick="document.getElementById('guide-modal').style.display='none'" style="margin-top: 20px;">Start Playing</button>
+        </div>
+    </div>
+
+    <script type="module" src="js/game.js"></script>
+</body>
+</html>
