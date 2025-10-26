@@ -1,4 +1,4 @@
-# AI Safety Connections 🧠🔗 / AI Safety Connections 🧠🔗
+# AI Safety Connections 🧠🔗�
 
 A Connections-style puzzle game focused on AI Safety concepts. Group related terms while learning about artificial intelligence safety and alignment!
 
