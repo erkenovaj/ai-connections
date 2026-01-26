@@ -1,6 +1,7 @@
 import PuzzleGenerator from './puzzle-generator.js';
 import TooltipManager from './tooltip.js';
 import DogAnimations from './dog-animations.js';
+import Sounds from './sounds.js';
 import { CONFIG, CONCEPT_DEFINITIONS } from './config.js';
 
 class AISafetyGame {
@@ -9,7 +10,8 @@ class AISafetyGame {
         this.selectedConcepts = [];
         this.mistakes = 0;
         this.solvedCategories = 0;
-        this.hintsEnabled = true; // Hints enabled by default
+        this.hintsEnabled = true;
+        this.gameMode = 'normal'; // 'normal' = 4 categories, 'advanced' = 3 categories
         this.tooltipManager = new TooltipManager();
         this.dogAnimations = new DogAnimations();
         this.init();
@@ -18,7 +20,9 @@ class AISafetyGame {
     init() {
         this.bindEvents();
         this.startNewGame();
-        this.updateHintsToggle(); // Initialize hints toggle state
+        this.updateHintsToggle();
+        this.updateModeToggle();
+        this.updateHeaderDesc();
     }
 
     bindEvents() {
@@ -30,12 +34,47 @@ class AISafetyGame {
         document.querySelector('.guide-btn').addEventListener('click', () => this.showGuide());
         document.querySelector('.hints-toggle-btn').addEventListener('click', () => this.toggleHints());
 
-        // Close tooltip when clicking elsewhere
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.setGameMode(e.target.dataset.mode));
+        });
+
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.concept-tooltip')) {
                 this.tooltipManager.forceHide();
             }
         });
+    }
+
+    setGameMode(mode) {
+        if (this.gameMode === mode) return;
+        this.gameMode = mode;
+        this.updateModeToggle();
+        this.updateHeaderDesc();
+        this.startNewGame();
+    }
+
+    updateModeToggle() {
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.mode === this.gameMode);
+        });
+        this.updateCategorySlotsVisibility();
+    }
+
+    updateHeaderDesc() {
+        const p = document.querySelector('.header-desc');
+        if (this.gameMode === 'normal') {
+            p.textContent = 'Create four groups of four that share a common theme. Many concepts fit multiple categories. The dog is watching...';
+        } else {
+            p.textContent = 'Create three groups of four that share a common theme. Four decoys included. The dog is watching...';
+        }
+    }
+
+    updateCategorySlotsVisibility() {
+        const fourth = document.querySelector('.category-slot-4th');
+        if (fourth) fourth.classList.toggle('hidden', this.gameMode === 'advanced');
+        const slots = document.getElementById('category-slots');
+        slots.classList.toggle('slots-4', this.gameMode === 'normal');
+        slots.classList.toggle('slots-3', this.gameMode === 'advanced');
     }
 
     toggleHints() {
@@ -66,17 +105,17 @@ class AISafetyGame {
 
     startNewGame() {
         this.closeAllModals();
-        this.currentPuzzle = PuzzleGenerator.generatePuzzle();
+        this.currentPuzzle = PuzzleGenerator.generatePuzzle(this.gameMode);
         this.selectedConcepts = [];
         this.mistakes = 0;
         this.solvedCategories = 0;
-        
+
+        this.updateCategorySlotsVisibility();
         this.updateMistakesDisplay();
         this.createGameBoard();
         this.resetCategorySlots();
         this.updateSubmitButton();
-        
-        // Reset dog to HAPPY state for new game
+
         this.dogAnimations.updateDogMood('happy');
     }
 
@@ -114,37 +153,48 @@ class AISafetyGame {
 
     toggleConcept(concept, cardElement) {
         this.tooltipManager.forceHide();
-        
+
+        const incorrectCards = Array.from(document.querySelectorAll('.concept-card.incorrect:not(.correct)'));
+        if (incorrectCards.length > 0) {
+            this.fadeIncorrectTiles(incorrectCards);
+        }
+
         const index = this.selectedConcepts.indexOf(concept);
-        
+
         if (index > -1) {
-            // Deselect
             this.selectedConcepts.splice(index, 1);
             cardElement.classList.remove('selected');
-            
             if (cardElement.classList.contains('incorrect') && !cardElement.classList.contains('correct')) {
                 cardElement.classList.remove('incorrect');
             }
         } else {
-            // Select
             if (this.selectedConcepts.length < CONFIG.CONCEPTS_PER_GROUP) {
                 this.selectedConcepts.push(concept);
                 cardElement.classList.add('selected');
-                
                 if (cardElement.classList.contains('incorrect')) {
                     cardElement.classList.remove('incorrect');
                 }
             }
         }
-        
+
         this.updateSubmitButton();
-        
-        // Dog reacts to selection
+
         if (this.selectedConcepts.length === CONFIG.CONCEPTS_PER_GROUP) {
             this.dogAnimations.updateDogMood('excited');
         } else {
             this.dogAnimations.updateDogMood('happy');
         }
+    }
+
+    fadeIncorrectTiles(cards) {
+        cards.forEach(card => {
+            card.classList.add('incorrect-fading');
+        });
+        setTimeout(() => {
+            cards.forEach(card => {
+                card.classList.remove('incorrect', 'incorrect-fading');
+            });
+        }, 400);
     }
 
     updateSubmitButton() {
@@ -173,27 +223,26 @@ class AISafetyGame {
         }
 
         if (matchedCategory) {
-            // Correct guess - CELEBRATING
+            Sounds.correct();
             this.markGroupAsCorrect(this.selectedConcepts);
             this.fillCategorySlot(matchedCategory, categoryDifficulty);
             this.solvedCategories++;
-            
-            // Dog celebrates with confetti!
+
             this.dogAnimations.updateDogMood('celebrating');
-            
-            if (this.solvedCategories === CONFIG.TOTAL_CATEGORIES) {
+
+            if (this.solvedCategories === this.currentPuzzle.numCategories) {
                 setTimeout(() => {
+                    Sounds.win();
                     this.showWinModal();
                     this.dogAnimations.updateDogMood('happy');
                 }, 2000);
             } else {
-                // Return to happy after a brief celebration
                 setTimeout(() => {
                     this.dogAnimations.updateDogMood('happy');
                 }, 2000);
             }
         } else {
-            // Incorrect guess - SAD/WORRIED
+            Sounds.wrong();
             this.mistakes++;
             this.updateMistakesDisplay();
             this.markGroupAsIncorrect(this.selectedConcepts);
@@ -214,6 +263,7 @@ class AISafetyGame {
             
             if (this.mistakes === CONFIG.MAX_MISTAKES) {
                 setTimeout(() => {
+                    Sounds.lose();
                     this.showLoseModal();
                     this.dogAnimations.updateDogMood('sad');
                 }, 1500);
@@ -317,8 +367,8 @@ class AISafetyGame {
         this.currentPuzzle.board = shuffledConcepts;
         this.selectedConcepts = [];
         this.updateSubmitButton();
-        
-        // Dog gets EXCITED about shuffling
+
+        Sounds.shuffle();
         this.dogAnimations.updateDogMood('excited');
         setTimeout(() => this.dogAnimations.updateDogMood('happy'), 1000);
     }

@@ -1,20 +1,25 @@
-import { CONCEPT_DEFINITIONS, CATEGORY_TEMPLATES } from './config.js';
+import { CONCEPT_DEFINITIONS, CATEGORY_TEMPLATES, CONFIG } from './config.js';
+
+const DIFFICULTIES = ['easy', 'medium', 'hard', 'harder'];
 
 class PuzzleGenerator {
-    static generatePuzzle() {
+    /**
+     * @param {'normal'|'advanced'} mode - 'normal' = 4 categories (16 tiles), 'advanced' = 3 categories (12 + 4 decoys)
+     */
+    static generatePuzzle(mode = 'normal') {
         const allConcepts = Object.keys(CONCEPT_DEFINITIONS);
-        
-        // Shuffle and pick 3 categories
+        const numCategories = mode === 'normal'
+            ? CONFIG.TOTAL_CATEGORIES_NORMAL
+            : CONFIG.TOTAL_CATEGORIES_ADVANCED;
+
         const shuffledCategories = [...CATEGORY_TEMPLATES].sort(() => Math.random() - 0.5);
-        const selectedCategories = shuffledCategories.slice(0, 3);
-        
-        // Collect all unique concepts from selected categories
+        const selectedCategories = shuffledCategories.slice(0, numCategories);
+
         const allPuzzleConcepts = new Set();
         selectedCategories.forEach(category => {
             category.members.forEach(concept => allPuzzleConcepts.add(concept));
         });
 
-        // Add decoys if needed to reach 16 concepts
         const neededConcepts = 16 - allPuzzleConcepts.size;
         if (neededConcepts > 0) {
             const availableDecoys = allConcepts.filter(concept => !allPuzzleConcepts.has(concept));
@@ -22,16 +27,18 @@ class PuzzleGenerator {
             decoys.forEach(decoy => allPuzzleConcepts.add(decoy));
         }
 
-        // Convert to array and shuffle
         const boardConcepts = Array.from(allPuzzleConcepts).sort(() => Math.random() - 0.5);
+
+        const categories = {};
+        selectedCategories.forEach((cat, i) => {
+            const d = DIFFICULTIES[i];
+            categories[d] = { ...cat, difficulty: d };
+        });
 
         return {
             board: boardConcepts,
-            categories: {
-                easy: { ...selectedCategories[0], difficulty: 'easy' },
-                medium: { ...selectedCategories[1], difficulty: 'medium' },
-                hard: { ...selectedCategories[2], difficulty: 'hard' }
-            }
+            categories,
+            numCategories
         };
     }
 }

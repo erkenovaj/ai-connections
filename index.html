@@ -4,14 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Safety Connections</title>
+    <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>AI Safety Connections - EXPERT MODE</h1>
-            <p>Create three groups of four that share a common theme. Many concepts fit multiple categories. The dog is watching...</p>
+            <h1>AI Safety Connections</h1>
+            <p class="header-desc">Create four groups of four that share a common theme. Many concepts fit multiple categories. The dog is watching...</p>
+            <div class="mode-toggle">
+                <button class="mode-btn active" data-mode="normal">Normal (4 categories)</button>
+                <button class="mode-btn" data-mode="advanced">Advanced (3 categories)</button>
+            </div>
         </div>
 
         <div class="game-info">
@@ -33,7 +38,7 @@
             <!-- 16 concepts will be inserted here by JavaScript -->
         </div>
 
-        <div class="category-slots" id="category-slots">
+        <div class="category-slots slots-4" id="category-slots">
             <div class="category-slot" data-difficulty="easy">
                 <div class="category-name">Category 1</div>
                 <div class="category-concepts"></div>
@@ -44,6 +49,10 @@
             </div>
             <div class="category-slot" data-difficulty="hard">
                 <div class="category-name">Category 3</div>
+                <div class="category-concepts"></div>
+            </div>
+            <div class="category-slot category-slot-4th" data-difficulty="harder">
+                <div class="category-name">Category 4</div>
                 <div class="category-concepts"></div>
             </div>
         </div>
@@ -91,7 +100,7 @@
             <div class="guide-content">
                 <div class="guide-section">
                     <h3>🎯 Objective</h3>
-                    <p>Find 3 groups of 4 concepts that share a common theme. Each group corresponds to a category with increasing difficulty.</p>
+                    <p><strong>Normal:</strong> Find 4 groups of 4 concepts. <strong>Advanced:</strong> Find 3 groups of 4 (plus decoys). Each group corresponds to a category with increasing difficulty.</p>
                 </div>
 
                 <div class="guide-section">

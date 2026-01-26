@@ -172,21 +172,20 @@
 }
 
 /* Hint toggle styles */
-.hints-toggle {
-    background: #95a5a6 !important;
+.hints-toggle-btn {
     display: flex;
     align-items: center;
     gap: 5px;
 }
 
-.hints-toggle.on {
+.hints-toggle-btn.on {
     background: #27ae60 !important;
 }
 
-.hints-toggle.off {
+.hints-toggle-btn.off {
     background: #e74c3c !important;
 }
 
-.hints-toggle span {
+.hints-toggle-btn span {
     font-size: 12px;
 }

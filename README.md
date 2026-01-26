@@ -11,11 +11,15 @@ A Connections-style puzzle game focused on AI Safety concepts. Group related ter
 ### 🎮 How to Play
 
 #### Objective
-Find **3 groups of 4 concepts** that share a common theme. Each group has a different difficulty level:
+- **Normal mode:** Find **4 groups of 4 concepts** that share a common theme.
+- **Advanced mode:** Find **3 groups of 4** (plus 4 decoys). Fewer categories, trickier!
+
+Each group has a different difficulty level:
 
 - 🟡 **Easy** - More obvious connections
 - 🔵 **Medium** - Requires some AI safety knowledge  
 - 🟣 **Hard** - Subtle philosophical connections
+- 🔴 **Harder** - (Normal mode only) Most challenging
 
 #### Gameplay
 1. **Select 4 tiles** that you think belong to the same category
@@ -24,8 +28,10 @@ Find **3 groups of 4 concepts** that share a common theme. Each group has a diff
 4. **Watch the dog** - it reacts to your progress!
 
 #### Features
+- **Normal / Advanced** - Toggle between 4-category and 3-category (with decoys) modes
 - **Hover over concepts** to see definitions
 - **Dictionary** with all concept explanations
+- **Sound effects** for correct, wrong, win, lose, and shuffle
 - **Interactive dog** that celebrates or worries with you
 - **Educational** - learn about AI safety while playing
 
@@ -35,6 +41,14 @@ Your canine companion shows different emotions:
 - 😟 **Sad Dog** (`sad_dog.png`) - When you make mistakes  
 - 🎉 **Celebrating** - When you solve puzzles
 - 😴 **Sleeping** - When the game ends
+
+### 🌐 Deploying to GitHub Pages
+
+1. Push this repo to GitHub.
+2. Open **Settings → Pages**.
+3. Under **Source**, choose **Deploy from a branch**.
+4. Branch: **main** (or **master**), Folder: **/ (root)**.
+5. Save. The site will be at `https://<username>.github.io/<repo-name>/`.
 
 ### 🚀 Running the Game Locally
 
@@ -77,8 +91,11 @@ ai-safety-connections/
 │   ├── puzzle-generator.js # Puzzle creation
 │   ├── tooltip.js      # Concept hover tooltips
 │   ├── dog-animations.js   # Dog behavior and animations
-│   └── config.js       # Game configuration and data
+│   ├── sounds.js       # Web Audio sound effects
+│   ├── config.js       # Game configuration and data
+│   └── category-templates.json # Category definitions
 ├── images/
+│   ├── favicon.svg     # Site icon
 │   ├── happy_dog.png   # Happy dog image
 │   └── sad_dog.png     # Sad dog image
 └── README.md          # This file
