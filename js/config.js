@@ -55,17 +55,17 @@ const CONCEPT_DEFINITIONS = {
 // Category templates for puzzle generation - loaded from JSON config
 let CATEGORY_TEMPLATES = [];
 
-// Load category templates from JSON file
+// Load category templates from JSON file (use import.meta.url so path resolves from module location)
 async function loadCategoryTemplates() {
     try {
-        const response = await fetch('./js/category-templates.json');
+        const url = new URL('./category-templates.json', import.meta.url).href;
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`Failed to load category templates: ${response.statusText}`);
         }
         CATEGORY_TEMPLATES = await response.json();
     } catch (error) {
         console.error('Error loading category templates:', error);
-        // Fallback to empty array if loading fails
         CATEGORY_TEMPLATES = [];
     }
 }

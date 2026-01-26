@@ -350,12 +350,12 @@ class AISafetyGame {
     }
 
     shuffleBoard() {
+        const previouslySelected = [...this.selectedConcepts];
         const cards = Array.from(document.querySelectorAll('.concept-card'));
         const shuffledConcepts = [...this.currentPuzzle.board].sort(() => Math.random() - 0.5);
-        
+
         cards.forEach((card, index) => {
             card.textContent = shuffledConcepts[index];
-            // Preserve the card state (correct/incorrect) when shuffling
             if (card.classList.contains('correct')) {
                 card.classList.add('correct');
             } else if (card.classList.contains('incorrect')) {
@@ -363,9 +363,16 @@ class AISafetyGame {
             }
             card.classList.remove('selected');
         });
-        
+
         this.currentPuzzle.board = shuffledConcepts;
         this.selectedConcepts = [];
+        previouslySelected.forEach(concept => {
+            const card = this.findCardByConcept(concept);
+            if (card && !card.classList.contains('correct')) {
+                this.selectedConcepts.push(concept);
+                card.classList.add('selected');
+            }
+        });
         this.updateSubmitButton();
 
         Sounds.shuffle();
@@ -456,9 +463,14 @@ class AISafetyGame {
     }
 }
 
-// Initialize game when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize game when DOM is ready (modules run deferred; DOMContentLoaded may have already fired)
+function initGame() {
     new AISafetyGame();
-});
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGame);
+} else {
+    initGame();
+}
 
 export default AISafetyGame;
