@@ -35,9 +35,52 @@ body {
     margin-bottom: 10px;
 }
 
-.header p {
+.header p,
+.header .header-desc {
     color: #7f8c8d;
     font-size: 1.1rem;
+}
+
+.mode-toggle {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 12px;
+}
+
+.mode-btn {
+    padding: 8px 16px;
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    background: white;
+    color: #7f8c8d;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mode-btn:hover {
+    border-color: #3498db;
+    color: #3498db;
+}
+
+.mode-btn.active {
+    background: #3498db;
+    border-color: #3498db;
+    color: white;
+}
+
+.version-badge {
+    display: inline-block;
+    font-size: 0.5em;
+    font-weight: 600;
+    color: #27ae60;
+    background: #d5f4e6;
+    padding: 2px 8px;
+    border-radius: 6px;
+    vertical-align: middle;
+    margin-left: 6px;
 }
 
 .game-info {
@@ -75,7 +118,7 @@ body {
     gap: 10px;
 }
 
-.shuffle-btn, .dictionary-btn, .guide-btn {
+.shuffle-btn, .dictionary-btn, .guide-btn, .hints-toggle-btn {
     background: #3498db;
     color: white;
     border: none;
@@ -145,6 +188,14 @@ body {
     border-width: 3px;
 }
 
+.concept-card.incorrect-fading,
+.concept-card.incorrect.incorrect-fading {
+    transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease;
+    background-color: white;
+    border-color: #bdc3c7;
+    color: #333;
+}
+
 /* Tooltip Styles */
 .concept-tooltip {
     position: absolute;
@@ -184,9 +235,20 @@ body {
 
 .category-slots {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
     gap: 15px;
     margin-bottom: 30px;
+}
+
+.category-slots.slots-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.category-slots.slots-4 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.category-slot.hidden {
+    display: none;
 }
 
 .category-slot {
@@ -308,6 +370,7 @@ body {
 .solution-category.easy { background: #fef9e7; border-left: 4px solid #f1c40f; }
 .solution-category.medium { background: #e8f4fd; border-left: 4px solid #3498db; }
 .solution-category.hard { background: #f4ecf7; border-left: 4px solid #9b59b6; }
+.solution-category.harder { background: #fdeaea; border-left: 4px solid #e74c3c; }
 
 .difficulty-badge {
     display: inline-block;
@@ -321,6 +384,7 @@ body {
 .easy-badge { background: #f1c40f; color: white; }
 .medium-badge { background: #3498db; color: white; }
 .hard-badge { background: #9b59b6; color: white; }
+.harder-badge { background: #e74c3c; color: white; }
 
 .concept-list {
     text-align: left;

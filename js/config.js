@@ -2,7 +2,8 @@
 const CONFIG = {
     MAX_MISTAKES: 4,
     CONCEPTS_PER_GROUP: 4,
-    TOTAL_CATEGORIES: 3,
+    TOTAL_CATEGORIES_NORMAL: 4,
+    TOTAL_CATEGORIES_ADVANCED: 3,
     DOG_UPDATE_INTERVAL: 10000,
     TOOLTIP_DELAY: 300
 };
@@ -46,43 +47,30 @@ const CONCEPT_DEFINITIONS = {
     "Coherent Blended Volition": "What humanity would want if we knew more and thought more clearly.",
     "Subagent Alignment": "Ensuring all components of an AI system are properly aligned.",
     "Impact Regularization": "Penalizing AI for having large effects on the world.",
-    "Goal Preservation": "Ensuring AI maintains its original goals even as it learns."
+    "Goal Preservation": "Ensuring AI maintains its original goals even as it learns.",
+    "Inverse Reinforcement Learning": "Learning human preferences from behavior to align AI objectives.",
+    "Preference Learning": "Training AI to infer and satisfy human preferences from feedback."
 };
 
-// Category templates for puzzle generation
-const CATEGORY_TEMPLATES = [
-    {
-        name: "Technical Failure Modes",
-        members: ["Instrumental Convergence", "Inner Misalignment", "Deceptive Alignment", "Reward Hacking"]
-    },
-    {
-        name: "AI Governance Mechanisms", 
-        members: ["Compute Governance", "Model Evaluations", "Audits", "Pause"]
-    },
-    {
-        name: "Philosophical Concepts",
-        members: ["Value Learning", "Orthogonality Thesis", "Singleton Hypothesis", "Paperclip Maximizer"]
-    },
-    {
-        name: "Societal Risks",
-        members: ["Structural Unemployment", "Information Apocalypse", "AI Arms Race", "Algorithmic Bias"]
-    },
-    {
-        name: "Alignment Research Areas",
-        members: ["Scalable Oversight", "Corrigibility", "Interpretability", "Value Learning"]
-    },
-    {
-        name: "Thought Experiments",
-        members: ["Paperclip Maximizer", "Singleton Hypothesis", "Treacherous Turn", "Orthogonality Thesis"]
-    },
-    {
-        name: "Technical Safety Approaches",
-        members: ["Interpretability", "Scalable Oversight", "Corrigibility", "Model Evaluations"]
-    },
-    {
-        name: "Systemic Risks",
-        members: ["AI Arms Race", "Value Lock-in", "Anthropic Capture", "Structural Unemployment"]
+// Category templates for puzzle generation - loaded from JSON config
+let CATEGORY_TEMPLATES = [];
+
+// Load category templates from JSON file (use import.meta.url so path resolves from module location)
+async function loadCategoryTemplates() {
+    try {
+        const url = new URL('./category-templates.json', import.meta.url).href;
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to load category templates: ${response.statusText}`);
+        }
+        CATEGORY_TEMPLATES = await response.json();
+    } catch (error) {
+        console.error('Error loading category templates:', error);
+        CATEGORY_TEMPLATES = [];
     }
-];
+}
+
+// Initialize category templates immediately
+await loadCategoryTemplates();
 
 export { CONFIG, CONCEPT_DEFINITIONS, CATEGORY_TEMPLATES };
