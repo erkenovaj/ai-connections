@@ -34,7 +34,7 @@ class AISafetyGame {
         this.timerInterval = null;
         this.elapsedSeconds = 0;
         this.currentScore = 0;
-        this.lastTappedForTooltip = null;
+        this.isTouch = isTouchDevice();
         this.init();
     }
 
@@ -72,11 +72,15 @@ class AISafetyGame {
             btn.addEventListener('click', (e) => this.setGameMode(e.target.dataset.mode));
         });
 
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.concept-tooltip')) {
-                this.tooltipManager.forceHide();
-            }
-        });
+        // Desktop-only: hide tooltip when clicking elsewhere.
+        // On touch devices we keep definitions visible until the user taps the tile again.
+        if (!this.isTouch) {
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.concept-tooltip')) {
+                    this.tooltipManager.forceHide();
+                }
+            });
+        }
     }
 
     setGameMode(mode) {
@@ -149,7 +153,7 @@ class AISafetyGame {
         this.selectedConcepts = [];
         this.mistakes = 0;
         this.solvedCategories = 0;
-        this.lastTappedForTooltip = null;
+        this.tooltipManager.forceHide();
 
         this.updateCategorySlotsVisibility();
         this.updateMistakesDisplay();
@@ -226,25 +230,32 @@ class AISafetyGame {
     }
 
     handleCardClick(concept, cardElement, e) {
-        if (isTouchDevice() && this.hintsEnabled && !this.selectedConcepts.includes(concept)) {
-            if (this.lastTappedForTooltip === cardElement) {
-                this.lastTappedForTooltip = null;
+        // Touch UX:
+        // - Tap always selects/deselects.
+        // - If defs are ON, tapping also toggles a sticky definition popup for that tile.
+        //   It stays open until the user taps the same tile again.
+        if (this.isTouch && this.hintsEnabled) {
+            e.stopPropagation(); // prevent immediate outside-click handlers from hiding it
+            const tooltipIsOpenForThisConcept =
+                this.tooltipManager.currentConcept === concept &&
+                this.tooltipManager.tooltip?.classList.contains('show');
+
+            this.toggleConcept(concept, cardElement, { preserveTooltip: true });
+
+            if (tooltipIsOpenForThisConcept) {
                 this.tooltipManager.forceHide();
-                this.toggleConcept(concept, cardElement);
             } else {
-                this.lastTappedForTooltip = cardElement;
                 this.tooltipManager.show(concept, cardElement);
                 this.tooltipManager.makeSticky();
-                return;
             }
-        } else {
-            this.toggleConcept(concept, cardElement);
+            return;
         }
+
+        this.toggleConcept(concept, cardElement);
     }
 
-    toggleConcept(concept, cardElement) {
-        this.tooltipManager.forceHide();
-        this.lastTappedForTooltip = null;
+    toggleConcept(concept, cardElement, { preserveTooltip = false } = {}) {
+        if (!preserveTooltip) this.tooltipManager.forceHide();
 
         const incorrectCards = Array.from(document.querySelectorAll('.concept-card.incorrect:not(.correct)'));
         if (incorrectCards.length > 0) {
