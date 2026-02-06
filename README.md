@@ -29,11 +29,14 @@ Each group has a different difficulty level:
 
 #### Features
 - **Normal / Advanced** - Toggle between 4-category and 3-category (with decoys) modes
-- **Hover over concepts** to see definitions
+- **Timer & score** - Each game is timed; score is based on correct groups, mistakes, and speed
+- **Leaderboard** - Save your name when you win; best scores stored on your device
+- **Hover (or tap on mobile)** over concepts to see definitions when hints are ON
 - **Dictionary** with all concept explanations
-- **Sound effects** for correct, wrong, win, lose, and shuffle
+- **Sound effects** for correct, wrong, win, and lose
 - **Interactive dog** that celebrates or worries with you
 - **Educational** - learn about AI safety while playing
+- **URL options** - Open with `?mode=advanced` or `?mode=normal`; use `?guide=0` to skip the first-time guide
 
 #### The AI Safety Dog 🐕
 Your canine companion shows different emotions:
@@ -44,11 +47,16 @@ Your canine companion shows different emotions:
 
 ### 🌐 Deploying to GitHub Pages
 
-1. Push this repo to GitHub.
-2. Open **Settings → Pages**.
-3. Under **Source**, choose **Deploy from a branch**.
-4. Branch: **main** (or **master**), Folder: **/ (root)**.
+**Option A – Deploy from a branch (simplest)**  
+1. Push this repo to GitHub (include `js/category-templates.json` so puzzles load correctly).  
+2. Open **Settings → Pages**.  
+3. Under **Source**, choose **Deploy from a branch**.  
+4. Branch: **main** (or **master**), Folder: **/ (root)**.  
 5. Save. The site will be at `https://<username>.github.io/<repo-name>/`.
+
+**Option B – Deploy with GitHub Actions**  
+1. Push the repo and ensure **Settings → Pages → Source** is set to **GitHub Actions**.  
+2. The included workflow (`.github/workflows/pages.yml`) will deploy the root on every push to `main`.
 
 ### 🚀 Running the Game Locally
 

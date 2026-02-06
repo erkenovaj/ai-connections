@@ -4,6 +4,22 @@ import DogAnimations from './dog-animations.js';
 import Sounds from './sounds.js';
 import { CONFIG, CONCEPT_DEFINITIONS } from './config.js';
 
+const LEADERBOARD_KEY = 'ai_connections_leaderboard';
+const GUIDE_SEEN_KEY = 'ai_connections_guide_seen';
+const MAX_LEADERBOARD_ENTRIES = 20;
+
+function parseUrlConfig() {
+    const params = new URLSearchParams(window.location.search);
+    return {
+        mode: params.get('mode') === 'advanced' ? 'advanced' : (params.get('mode') === 'normal' ? 'normal' : null),
+        showGuide: params.get('guide') !== '0'
+    };
+}
+
+function isTouchDevice() {
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+}
+
 class AISafetyGame {
     constructor() {
         this.currentPuzzle = null;
@@ -11,28 +27,46 @@ class AISafetyGame {
         this.mistakes = 0;
         this.solvedCategories = 0;
         this.hintsEnabled = true;
-        this.gameMode = 'normal'; // 'normal' = 4 categories, 'advanced' = 3 categories
+        this.gameMode = 'normal';
         this.tooltipManager = new TooltipManager();
         this.dogAnimations = new DogAnimations();
+        this.timerStart = null;
+        this.timerInterval = null;
+        this.elapsedSeconds = 0;
+        this.currentScore = 0;
+        this.lastTappedForTooltip = null;
         this.init();
     }
 
     init() {
+        const urlConfig = parseUrlConfig();
+        if (urlConfig.mode !== null) this.gameMode = urlConfig.mode;
         this.bindEvents();
-        this.startNewGame();
         this.updateHintsToggle();
         this.updateModeToggle();
         this.updateHeaderDesc();
+        this.updateTimerDisplay(0);
+        this.updateScoreDisplay(null);
+        if (urlConfig.showGuide && !localStorage.getItem(GUIDE_SEEN_KEY)) {
+            setTimeout(() => this.showGuide(), 100);
+        }
+        this.startNewGame();
     }
 
     bindEvents() {
         document.getElementById('submit-btn').addEventListener('click', () => this.submitGuess());
         document.getElementById('deselect-btn').addEventListener('click', () => this.deselectAll());
         document.getElementById('new-game-btn').addEventListener('click', () => this.startNewGame());
-        document.querySelector('.shuffle-btn').addEventListener('click', () => this.shuffleBoard());
         document.querySelector('.dictionary-btn').addEventListener('click', () => this.showDictionary());
         document.querySelector('.guide-btn').addEventListener('click', () => this.showGuide());
         document.querySelector('.hints-toggle-btn').addEventListener('click', () => this.toggleHints());
+        document.querySelector('.leaderboard-btn').addEventListener('click', () => this.showLeaderboard());
+        document.querySelector('.guide-close-btn').addEventListener('click', () => {
+            localStorage.setItem(GUIDE_SEEN_KEY, '1');
+            document.getElementById('guide-modal').style.display = 'none';
+        });
+        document.getElementById('win-save-btn').addEventListener('click', () => this.closeWinAndSave());
+        document.getElementById('leaderboard-close-btn').addEventListener('click', () => document.getElementById('leaderboard-modal').style.display = 'none');
 
         document.querySelectorAll('.mode-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.setGameMode(e.target.dataset.mode));
@@ -105,18 +139,66 @@ class AISafetyGame {
 
     startNewGame() {
         this.closeAllModals();
+        this.stopTimer();
+        this.timerStart = Date.now();
+        this.elapsedSeconds = 0;
+        this.currentScore = 0;
+        this.updateTimerDisplay(0);
+        this.updateScoreDisplay(null);
         this.currentPuzzle = PuzzleGenerator.generatePuzzle(this.gameMode);
         this.selectedConcepts = [];
         this.mistakes = 0;
         this.solvedCategories = 0;
+        this.lastTappedForTooltip = null;
 
         this.updateCategorySlotsVisibility();
         this.updateMistakesDisplay();
         this.createGameBoard();
         this.resetCategorySlots();
         this.updateSubmitButton();
+        this.startTimer();
 
         this.dogAnimations.updateDogMood('happy');
+    }
+
+    startTimer() {
+        this.timerStart = Date.now();
+        this.timerInterval = setInterval(() => {
+            this.elapsedSeconds = Math.floor((Date.now() - this.timerStart) / 1000);
+            this.updateTimerDisplay(this.elapsedSeconds);
+        }, 1000);
+    }
+
+    stopTimer() {
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
+        if (this.timerStart) {
+            this.elapsedSeconds = Math.floor((Date.now() - this.timerStart) / 1000);
+        }
+    }
+
+    updateTimerDisplay(seconds) {
+        const el = document.getElementById('timer-display');
+        if (!el) return;
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    updateScoreDisplay(score) {
+        const el = document.getElementById('score-display');
+        if (!el) return;
+        el.textContent = score === null ? 'Score: —' : `Score: ${score}`;
+    }
+
+    computeScore(won) {
+        if (!won) return Math.max(0, 100 - this.mistakes * 25);
+        const base = this.currentPuzzle.numCategories * 100;
+        const mistakePenalty = this.mistakes * 25;
+        const timeBonus = Math.max(0, 200 - Math.floor(this.elapsedSeconds / 2));
+        return Math.max(0, base - mistakePenalty + timeBonus);
     }
 
     createGameBoard() {
@@ -127,32 +209,42 @@ class AISafetyGame {
             const card = document.createElement('div');
             card.className = 'concept-card';
             card.textContent = concept;
-            
-            // Only add hover events if hints are enabled
+            card.dataset.concept = concept;
+
             if (this.hintsEnabled) {
-                card.addEventListener('mouseenter', (e) => {
+                card.addEventListener('mouseenter', () => {
                     if (!card.classList.contains('correct') && !card.classList.contains('incorrect')) {
                         this.tooltipManager.show(concept, card);
                     }
                 });
-                
-                card.addEventListener('mouseleave', () => {
-                    this.tooltipManager.hide();
-                });
-            } else {
-                // Remove any existing hover events when hints are disabled
-                card.removeEventListener('mouseenter', this.tooltipManager.show);
-                card.removeEventListener('mouseleave', this.tooltipManager.hide);
+                card.addEventListener('mouseleave', () => this.tooltipManager.hide());
             }
-            
-            card.addEventListener('click', () => this.toggleConcept(concept, card));
-            
+
+            card.addEventListener('click', (e) => this.handleCardClick(concept, card, e));
             gameBoard.appendChild(card);
         });
     }
 
+    handleCardClick(concept, cardElement, e) {
+        if (isTouchDevice() && this.hintsEnabled && !this.selectedConcepts.includes(concept)) {
+            if (this.lastTappedForTooltip === cardElement) {
+                this.lastTappedForTooltip = null;
+                this.tooltipManager.forceHide();
+                this.toggleConcept(concept, cardElement);
+            } else {
+                this.lastTappedForTooltip = cardElement;
+                this.tooltipManager.show(concept, cardElement);
+                this.tooltipManager.makeSticky();
+                return;
+            }
+        } else {
+            this.toggleConcept(concept, cardElement);
+        }
+    }
+
     toggleConcept(concept, cardElement) {
         this.tooltipManager.forceHide();
+        this.lastTappedForTooltip = null;
 
         const incorrectCards = Array.from(document.querySelectorAll('.concept-card.incorrect:not(.correct)'));
         if (incorrectCards.length > 0) {
@@ -227,10 +319,15 @@ class AISafetyGame {
             this.markGroupAsCorrect(this.selectedConcepts);
             this.fillCategorySlot(matchedCategory, categoryDifficulty);
             this.solvedCategories++;
+            this.currentScore = this.computeScore(false);
+            this.updateScoreDisplay(this.currentScore);
 
             this.dogAnimations.updateDogMood('celebrating');
 
             if (this.solvedCategories === this.currentPuzzle.numCategories) {
+                this.stopTimer();
+                this.currentScore = this.computeScore(true);
+                this.updateScoreDisplay(this.currentScore);
                 setTimeout(() => {
                     Sounds.win();
                     this.showWinModal();
@@ -262,6 +359,10 @@ class AISafetyGame {
             }
             
             if (this.mistakes === CONFIG.MAX_MISTAKES) {
+                this.stopTimer();
+                this.currentScore = this.computeScore(false);
+                this.updateScoreDisplay(this.currentScore);
+                this.saveResult(false);
                 setTimeout(() => {
                     Sounds.lose();
                     this.showLoseModal();
@@ -349,37 +450,6 @@ class AISafetyGame {
         this.dogAnimations.updateDogMood('happy');
     }
 
-    shuffleBoard() {
-        const previouslySelected = [...this.selectedConcepts];
-        const cards = Array.from(document.querySelectorAll('.concept-card'));
-        const shuffledConcepts = [...this.currentPuzzle.board].sort(() => Math.random() - 0.5);
-
-        cards.forEach((card, index) => {
-            card.textContent = shuffledConcepts[index];
-            if (card.classList.contains('correct')) {
-                card.classList.add('correct');
-            } else if (card.classList.contains('incorrect')) {
-                card.classList.add('incorrect');
-            }
-            card.classList.remove('selected');
-        });
-
-        this.currentPuzzle.board = shuffledConcepts;
-        this.selectedConcepts = [];
-        previouslySelected.forEach(concept => {
-            const card = this.findCardByConcept(concept);
-            if (card && !card.classList.contains('correct')) {
-                this.selectedConcepts.push(concept);
-                card.classList.add('selected');
-            }
-        });
-        this.updateSubmitButton();
-
-        Sounds.shuffle();
-        this.dogAnimations.updateDogMood('excited');
-        setTimeout(() => this.dogAnimations.updateDogMood('happy'), 1000);
-    }
-
     showDictionary() {
         const dictionaryModal = document.getElementById('dictionary-modal');
         const conceptList = document.getElementById('dictionary-list');
@@ -411,8 +481,85 @@ class AISafetyGame {
     }
 
     showWinModal() {
+        const statsEl = document.getElementById('win-stats');
+        const promptEl = document.getElementById('win-name-prompt');
+        if (statsEl) statsEl.textContent = `Time: ${Math.floor(this.elapsedSeconds / 60)}:${(this.elapsedSeconds % 60).toString().padStart(2, '0')} — Score: ${this.currentScore}`;
+        if (promptEl) promptEl.style.display = 'block';
+        document.getElementById('player-name').value = '';
         document.getElementById('win-modal').style.display = 'flex';
-        // Dog stays celebrating for win modal
+    }
+
+    closeWinAndSave() {
+        const nameInput = document.getElementById('player-name');
+        const name = (nameInput && nameInput.value.trim()) || 'Anonymous';
+        this.addToLeaderboard(name, this.currentScore, this.elapsedSeconds, this.gameMode);
+        this.saveResult(true);
+        document.getElementById('win-modal').style.display = 'none';
+        document.getElementById('win-name-prompt').style.display = 'none';
+        this.startNewGame();
+    }
+
+    getLeaderboard() {
+        try {
+            const raw = localStorage.getItem(LEADERBOARD_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch {
+            return [];
+        }
+    }
+
+    addToLeaderboard(name, score, timeSeconds, mode) {
+        let list = this.getLeaderboard();
+        list.push({
+            name: name.substring(0, 20),
+            score,
+            time: timeSeconds,
+            mode,
+            date: new Date().toISOString()
+        });
+        list.sort((a, b) => b.score - a.score);
+        list = list.slice(0, MAX_LEADERBOARD_ENTRIES);
+        localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(list));
+    }
+
+    saveResult(won) {
+        try {
+            const key = 'ai_connections_recent';
+            const entry = {
+                won,
+                score: this.currentScore,
+                time: this.elapsedSeconds,
+                mode: this.gameMode,
+                date: new Date().toISOString()
+            };
+            let recent = [];
+            try {
+                const raw = localStorage.getItem(key);
+                if (raw) recent = JSON.parse(raw);
+            } catch {}
+            recent.unshift(entry);
+            recent = recent.slice(0, 10);
+            localStorage.setItem(key, JSON.stringify(recent));
+        } catch (_) {}
+    }
+
+    showLeaderboard() {
+        const list = this.getLeaderboard();
+        const container = document.getElementById('leaderboard-list');
+        if (!container) return;
+        container.innerHTML = '';
+        if (list.length === 0) {
+            container.innerHTML = '<p class="leaderboard-hint">No scores yet. Win a game and enter your name to appear here!</p>';
+        } else {
+            list.forEach((entry, i) => {
+                const div = document.createElement('div');
+                div.className = 'leaderboard-item' + (i < 3 ? ` rank-${i + 1}` : '');
+                const timeStr = `${Math.floor(entry.time / 60)}:${(entry.time % 60).toString().padStart(2, '0')}`;
+                div.innerHTML = `<span><strong>#${i + 1}</strong> ${entry.name}</span><span>${entry.score} pts · ${timeStr}</span>`;
+                container.appendChild(div);
+            });
+        }
+        document.getElementById('leaderboard-modal').style.display = 'flex';
     }
 
     showLoseModal() {
