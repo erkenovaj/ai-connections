@@ -65,8 +65,6 @@ async function loadCategoryTemplates() {
         }
         CATEGORY_TEMPLATES = await response.json();
     } catch (error) {
-        console.error('Error loading category templates:', error);
-        CATEGORY_TEMPLATES = [];
     }
 }
 
