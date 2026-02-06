@@ -88,9 +88,14 @@
     <div class="modal" id="lose-modal">
         <div class="modal-content">
             <h2>Game Over</h2>
+            <p class="lose-stats" id="lose-stats"></p>
             <p>You've used all your attempts. The dog is disappointed but unharmed.</p>
             <div id="solution-container"></div>
-            <button class="new-game-btn" onclick="document.getElementById('lose-modal').style.display='none'">Try Again</button>
+            <div class="lose-name-prompt" id="lose-name-prompt">
+                <label for="lose-player-name">Name for leaderboard (optional):</label>
+                <input type="text" id="lose-player-name" maxlength="20" placeholder="Your name">
+            </div>
+            <button class="new-game-btn" id="lose-save-btn">Save &amp; Try Again</button>
         </div>
     </div>
 

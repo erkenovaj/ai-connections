@@ -66,7 +66,21 @@ class AISafetyGame {
             document.getElementById('guide-modal').style.display = 'none';
         });
         document.getElementById('win-save-btn').addEventListener('click', () => this.closeWinAndSave());
+        document.getElementById('lose-save-btn').addEventListener('click', () => this.closeLoseAndSave());
         document.getElementById('leaderboard-close-btn').addEventListener('click', () => document.getElementById('leaderboard-modal').style.display = 'none');
+
+        // Tap/click on modal backdrop (the dark overlay) closes the modal. Works on touch and desktop.
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+                if (e.target.id === 'guide-modal') {
+                    localStorage.setItem(GUIDE_SEEN_KEY, '1');
+                }
+                if (e.target.id === 'win-modal') {
+                    document.getElementById('win-name-prompt').style.display = 'none';
+                }
+            }
+        });
 
         document.querySelectorAll('.mode-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.setGameMode(e.target.dataset.mode));
@@ -510,6 +524,15 @@ class AISafetyGame {
         this.startNewGame();
     }
 
+    closeLoseAndSave() {
+        const nameInput = document.getElementById('lose-player-name');
+        const name = (nameInput && nameInput.value.trim()) || 'Anonymous';
+        this.addToLeaderboard(name, this.currentScore, this.elapsedSeconds, this.gameMode);
+        document.getElementById('lose-modal').style.display = 'none';
+        document.getElementById('lose-player-name').value = '';
+        this.startNewGame();
+    }
+
     getLeaderboard() {
         try {
             const raw = localStorage.getItem(LEADERBOARD_KEY);
@@ -574,6 +597,11 @@ class AISafetyGame {
     }
 
     showLoseModal() {
+        const statsEl = document.getElementById('lose-stats');
+        if (statsEl) statsEl.textContent = `Score: ${this.currentScore} — Time: ${Math.floor(this.elapsedSeconds / 60)}:${(this.elapsedSeconds % 60).toString().padStart(2, '0')}`;
+        const nameInput = document.getElementById('lose-player-name');
+        if (nameInput) nameInput.value = '';
+
         const solutionContainer = document.getElementById('solution-container');
         solutionContainer.innerHTML = '';
         

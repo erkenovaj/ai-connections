@@ -447,13 +447,31 @@ body {
     color: #7f8c8d;
 }
 
-.win-name-prompt input {
+.win-name-prompt input,
+.lose-name-prompt input {
     width: 100%;
     max-width: 200px;
     padding: 8px 12px;
     border: 2px solid #bdc3c7;
     border-radius: 6px;
     font-size: 14px;
+}
+
+.lose-name-prompt {
+    margin: 15px 0;
+}
+
+.lose-name-prompt label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+.lose-stats {
+    margin: 15px 0;
+    font-weight: 600;
+    color: #7f8c8d;
 }
 
 .leaderboard-hint {
