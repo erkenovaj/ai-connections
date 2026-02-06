@@ -20,6 +20,10 @@
         </div>
 
         <div class="game-info">
+            <div class="game-stats">
+                <div class="timer-display" id="timer-display" title="Elapsed time">0:00</div>
+                <div class="score-display" id="score-display" title="Score this game">Score: —</div>
+            </div>
             <div class="mistakes">
                 <div class="mistake-dot"></div>
                 <div class="mistake-dot"></div>
@@ -27,10 +31,10 @@
                 <div class="mistake-dot"></div>
             </div>
             <div class="game-controls">
-                <button class="shuffle-btn">Shuffle</button>
                 <button class="hints-toggle-btn">🔍 Hints: ON</button>
                 <button class="dictionary-btn">Dictionary</button>
                 <button class="guide-btn">Guide</button>
+                <button class="leaderboard-btn">Leaderboard</button>
             </div>
         </div>
 
@@ -71,8 +75,13 @@
     <div class="modal" id="win-modal">
         <div class="modal-content">
             <h2>🎉 Puzzle Complete!</h2>
+            <p class="win-stats" id="win-stats"></p>
             <p>You've successfully grouped all the AI safety concepts! The dog is very proud! 🐕</p>
-            <button class="new-game-btn" onclick="document.getElementById('win-modal').style.display='none'">Play Again</button>
+            <div class="win-name-prompt" id="win-name-prompt" style="display: none;">
+                <label for="player-name">Name for leaderboard (optional):</label>
+                <input type="text" id="player-name" maxlength="20" placeholder="Your name">
+            </div>
+            <button class="new-game-btn" id="win-save-btn">Save &amp; Play Again</button>
         </div>
     </div>
 
@@ -119,6 +128,24 @@
                         <li><span class="easy-badge">EASY</span> - More obvious connections</li>
                         <li><span class="medium-badge">MEDIUM</span> - Requires some AI safety knowledge</li>
                         <li><span class="hard-badge">HARD</span> - Subtle philosophical connections</li>
+                        <li><span class="harder-badge">HARDER</span> - (Normal mode) Most challenging</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h3>⏱️ Timer &amp; Score</h3>
+                    <ul>
+                        <li>The <strong>timer</strong> runs from the start of each game until you win or lose.</li>
+                        <li><strong>Score</strong> is based on correct categories, mistakes, and time. Higher is better!</li>
+                        <li>Save your name when you win to appear on the <strong>Leaderboard</strong> (stored on this device).</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h3>📱 On Phones &amp; Tablets</h3>
+                    <ul>
+                        <li><strong>Tap a tile</strong> once to see its definition (when hints are ON). Tap again to select it for your group.</li>
+                        <li>Use the Dictionary button for all definitions. </li>
                     </ul>
                 </div>
 
@@ -136,7 +163,7 @@
                 <div class="guide-section">
                     <h3>💡 Tips</h3>
                     <ul>
-                        <li>Hover over concepts to see their definitions</li>
+                        <li>Hover (or tap on mobile) over concepts to see their definitions</li>
                         <li>Use the Dictionary for quick reference</li>
                         <li>Look for both technical and thematic connections</li>
                         <li>Some concepts might fit multiple plausible groups</li>
@@ -144,10 +171,19 @@
                     </ul>
                 </div>
             </div>
-            <button class="new-game-btn" onclick="document.getElementById('guide-modal').style.display='none'" style="margin-top: 20px;">Start Playing</button>
+            <button class="new-game-btn guide-close-btn" style="margin-top: 20px;">Start Playing</button>
         </div>
     </div>
 
-    <script type="module" src="js/game.js?v=4"></script>
+    <div class="modal" id="leaderboard-modal">
+        <div class="modal-content">
+            <h2>🏆 Leaderboard</h2>
+            <p class="leaderboard-hint">Best scores (stored on this device)</p>
+            <div class="leaderboard-list" id="leaderboard-list"></div>
+            <button class="new-game-btn" id="leaderboard-close-btn">Close</button>
+        </div>
+    </div>
+
+    <script type="module" src="js/game.js?v=5"></script>
 </body>
 </html>
