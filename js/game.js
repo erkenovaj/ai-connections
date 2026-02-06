@@ -3,6 +3,7 @@ import TooltipManager from './tooltip.js';
 import DogAnimations from './dog-animations.js';
 import Sounds from './sounds.js';
 import { CONFIG, CONCEPT_DEFINITIONS } from './config.js';
+import { evaluateGuess, getGameStatus } from './game-rules.js';
 
 const LEADERBOARD_KEY = 'ai_connections_leaderboard';
 const GUIDE_SEEN_KEY = 'ai_connections_guide_seen';
@@ -311,21 +312,11 @@ class AISafetyGame {
         // Dog gets worried during submission
         this.dogAnimations.updateDogMood('worried');
 
-        let matchedCategory = null;
-        let categoryDifficulty = null;
-        
-        for (const [difficulty, category] of Object.entries(this.currentPuzzle.categories)) {
-            const categorySet = new Set(category.members);
-            const selectedSet = new Set(this.selectedConcepts);
-            
-            if (this.setsAreEqual(categorySet, selectedSet)) {
-                matchedCategory = category;
-                categoryDifficulty = difficulty;
-                break;
-            }
-        }
+        const guessResult = evaluateGuess(this.currentPuzzle, this.selectedConcepts);
+        const matchedCategory = guessResult.matchedCategory ?? null;
+        const categoryDifficulty = guessResult.difficulty ?? null;
 
-        if (matchedCategory) {
+        if (guessResult.correct && matchedCategory) {
             Sounds.correct();
             this.markGroupAsCorrect(this.selectedConcepts);
             this.fillCategorySlot(matchedCategory, categoryDifficulty);
@@ -432,10 +423,6 @@ class AISafetyGame {
             }
         }
         return null;
-    }
-
-    setsAreEqual(setA, setB) {
-        return setA.size === setB.size && [...setA].every(item => setB.has(item));
     }
 
     updateMistakesDisplay() {
