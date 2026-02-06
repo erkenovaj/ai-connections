@@ -7,6 +7,9 @@ class PuzzleGenerator {
      * @param {'normal'|'advanced'} mode - 'normal' = 4 categories (16 tiles), 'advanced' = 3 categories (12 + 4 decoys)
      */
     static generatePuzzle(mode = 'normal') {
+        if (!Array.isArray(CATEGORY_TEMPLATES) || CATEGORY_TEMPLATES.length === 0) {
+            throw new Error('Cannot generate puzzle: category templates not loaded. Check that category-templates.json is deployed (e.g. on GitHub Pages).');
+        }
         const allConcepts = Object.keys(CONCEPT_DEFINITIONS);
         const numCategories = mode === 'normal'
             ? CONFIG.TOTAL_CATEGORIES_NORMAL
