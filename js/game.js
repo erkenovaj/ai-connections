@@ -27,6 +27,8 @@ class AISafetyGame {
         this.mistakes = 0;
         this.solvedCategories = 0;
         this.hintsEnabled = true;
+        this.hintsRemaining = 4;
+        this.hintRevealedConcepts = new Set();
         this.gameMode = 'normal';
         this.tooltipManager = new TooltipManager();
         this.dogAnimations = new DogAnimations();
@@ -34,7 +36,9 @@ class AISafetyGame {
         this.timerInterval = null;
         this.elapsedSeconds = 0;
         this.currentScore = 0;
-        this.isTouch = isTouchDevice();
+        this.lastTappedForTooltip = null;
+        this.lastGuessTimestamp = null;
+        this.conceptCategoryMap = {};
         this.init();
     }
 
@@ -43,6 +47,7 @@ class AISafetyGame {
         if (urlConfig.mode !== null) this.gameMode = urlConfig.mode;
         this.bindEvents();
         this.updateHintsToggle();
+        this.updateHintButton();
         this.updateModeToggle();
         this.updateHeaderDesc();
         this.updateTimerDisplay(0);
@@ -60,41 +65,27 @@ class AISafetyGame {
         document.querySelector('.dictionary-btn').addEventListener('click', () => this.showDictionary());
         document.querySelector('.guide-btn').addEventListener('click', () => this.showGuide());
         document.querySelector('.hints-toggle-btn').addEventListener('click', () => this.toggleHints());
+        const hintBtn = document.querySelector('.category-hints-toggle-btn');
+        if (hintBtn) {
+            hintBtn.addEventListener('click', () => this.useHint());
+        }
         document.querySelector('.leaderboard-btn').addEventListener('click', () => this.showLeaderboard());
         document.querySelector('.guide-close-btn').addEventListener('click', () => {
             localStorage.setItem(GUIDE_SEEN_KEY, '1');
             document.getElementById('guide-modal').style.display = 'none';
         });
         document.getElementById('win-save-btn').addEventListener('click', () => this.closeWinAndSave());
-        document.getElementById('lose-save-btn').addEventListener('click', () => this.closeLoseAndSave());
         document.getElementById('leaderboard-close-btn').addEventListener('click', () => document.getElementById('leaderboard-modal').style.display = 'none');
-
-        // Tap/click on modal backdrop (the dark overlay) closes the modal. Works on touch and desktop.
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                e.target.style.display = 'none';
-                if (e.target.id === 'guide-modal') {
-                    localStorage.setItem(GUIDE_SEEN_KEY, '1');
-                }
-                if (e.target.id === 'win-modal') {
-                    document.getElementById('win-name-prompt').style.display = 'none';
-                }
-            }
-        });
 
         document.querySelectorAll('.mode-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.setGameMode(e.target.dataset.mode));
         });
 
-        // Desktop-only: hide tooltip when clicking elsewhere.
-        // On touch devices we keep definitions visible until the user taps the tile again.
-        if (!this.isTouch) {
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.concept-tooltip')) {
-                    this.tooltipManager.forceHide();
-                }
-            });
-        }
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.concept-tooltip')) {
+                this.tooltipManager.forceHide();
+            }
+        });
     }
 
     setGameMode(mode) {
@@ -144,6 +135,7 @@ class AISafetyGame {
 
     updateHintsToggle() {
         const hintsBtn = document.querySelector('.hints-toggle-btn');
+        if (!hintsBtn) return;
         if (this.hintsEnabled) {
             hintsBtn.classList.add('on');
             hintsBtn.classList.remove('off');
@@ -153,6 +145,54 @@ class AISafetyGame {
             hintsBtn.classList.remove('on');
             hintsBtn.innerHTML = '🚫 DEFS: OFF';
         }
+    }
+
+    useHint() {
+        if (this.hintsRemaining <= 0 || !this.currentPuzzle) return;
+        const solvedConcepts = this.getSolvedConcepts();
+        const unrevealed = this.currentPuzzle.board.filter(
+            concept => !this.hintRevealedConcepts.has(concept) && !solvedConcepts.has(concept)
+        );
+        if (unrevealed.length === 0) return;
+
+        const chosen = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+        this.hintRevealedConcepts.add(chosen);
+        this.hintsRemaining--;
+        this.currentScore = Math.max(0, Math.round(this.currentScore - 200));
+        this.updateScoreDisplay(this.currentScore);
+        this.updateHintButton();
+        this.updateHintRevealedOnBoard();
+    }
+
+    getSolvedConcepts() {
+        const solved = new Set();
+        const slots = document.querySelectorAll('.category-slot.filled');
+        slots.forEach(slot => {
+            const difficulty = slot.dataset.difficulty;
+            const category = this.currentPuzzle?.categories[difficulty];
+            if (category) category.members.forEach(c => solved.add(c));
+        });
+        return solved;
+    }
+
+    updateHintButton() {
+        const btn = document.querySelector('.category-hints-toggle-btn');
+        if (!btn) return;
+        btn.textContent = `💡 Hint (${this.hintsRemaining})`;
+        btn.disabled = this.hintsRemaining <= 0;
+        btn.classList.toggle('on', this.hintsRemaining > 0);
+        btn.classList.toggle('off', this.hintsRemaining <= 0);
+    }
+
+    updateHintRevealedOnBoard() {
+        const cards = document.querySelectorAll('.concept-card');
+        cards.forEach(card => {
+            const concept = card.dataset.concept;
+            const categoryName = this.conceptCategoryMap[concept];
+            if (this.hintRevealedConcepts.has(concept) && categoryName) {
+                card.dataset.hint = categoryName;
+            }
+        });
     }
 
     startNewGame() {
@@ -167,12 +207,24 @@ class AISafetyGame {
         this.selectedConcepts = [];
         this.mistakes = 0;
         this.solvedCategories = 0;
-        this.tooltipManager.forceHide();
+        this.hintsRemaining = 4;
+        this.hintRevealedConcepts = new Set();
+        this.lastTappedForTooltip = null;
+        this.lastGuessTimestamp = null;
+
+        // Build a quick lookup from concept to its category name (if any)
+        this.conceptCategoryMap = {};
+        for (const category of Object.values(this.currentPuzzle.categories)) {
+            category.members.forEach(concept => {
+                this.conceptCategoryMap[concept] = category.name;
+            });
+        }
 
         this.updateCategorySlotsVisibility();
         this.updateMistakesDisplay();
-        this.createGameBoard();
+        this.updateHintButton();
         this.resetCategorySlots();
+        this.createGameBoard();
         this.updateSubmitButton();
         this.startTimer();
 
@@ -212,22 +264,32 @@ class AISafetyGame {
     }
 
     computeScore(won) {
-        if (!won) return Math.max(0, 100 - this.mistakes * 25);
-        const base = this.currentPuzzle.numCategories * 100;
-        const mistakePenalty = this.mistakes * 25;
-        const timeBonus = Math.max(0, 200 - Math.floor(this.elapsedSeconds / 2));
-        return Math.max(0, base - mistakePenalty + timeBonus);
+        // Legacy helper retained for compatibility; scoring is now applied
+        // incrementally inside submitGuess based on time between guesses.
+        return Math.max(0, Math.round(this.currentScore));
     }
 
     createGameBoard() {
         const gameBoard = document.getElementById('game-board');
+        const solvedConcepts = this.getSolvedConcepts();
         gameBoard.innerHTML = '';
-        
+
         this.currentPuzzle.board.forEach(concept => {
             const card = document.createElement('div');
             card.className = 'concept-card';
             card.textContent = concept;
             card.dataset.concept = concept;
+
+            const categoryName = this.conceptCategoryMap[concept];
+            if (this.hintRevealedConcepts.has(concept) && categoryName) {
+                card.dataset.hint = categoryName;
+            }
+            if (this.selectedConcepts.includes(concept)) {
+                card.classList.add('selected');
+            }
+            if (solvedConcepts.has(concept)) {
+                card.classList.add('correct');
+            }
 
             if (this.hintsEnabled) {
                 card.addEventListener('mouseenter', () => {
@@ -244,32 +306,30 @@ class AISafetyGame {
     }
 
     handleCardClick(concept, cardElement, e) {
-        // Touch UX:
-        // - Tap always selects/deselects.
-        // - If defs are ON, tapping also toggles a sticky definition popup for that tile.
-        //   It stays open until the user taps the same tile again.
-        if (this.isTouch && this.hintsEnabled) {
-            e.stopPropagation(); // prevent immediate outside-click handlers from hiding it
-            const tooltipIsOpenForThisConcept =
-                this.tooltipManager.currentConcept === concept &&
-                this.tooltipManager.tooltip?.classList.contains('show');
-
-            this.toggleConcept(concept, cardElement, { preserveTooltip: true });
-
-            if (tooltipIsOpenForThisConcept) {
+        if (isTouchDevice() && this.hintsEnabled && !this.selectedConcepts.includes(concept)) {
+            // If already 3 selected, allow single-tap to add the 4th (no tooltip required)
+            if (this.selectedConcepts.length === CONFIG.CONCEPTS_PER_GROUP - 1) {
+                this.toggleConcept(concept, cardElement);
+                return;
+            }
+            if (this.lastTappedForTooltip === cardElement) {
+                this.lastTappedForTooltip = null;
                 this.tooltipManager.forceHide();
+                this.toggleConcept(concept, cardElement);
             } else {
+                this.lastTappedForTooltip = cardElement;
                 this.tooltipManager.show(concept, cardElement);
                 this.tooltipManager.makeSticky();
+                return;
             }
-            return;
+        } else {
+            this.toggleConcept(concept, cardElement);
         }
-
-        this.toggleConcept(concept, cardElement);
     }
 
-    toggleConcept(concept, cardElement, { preserveTooltip = false } = {}) {
-        if (!preserveTooltip) this.tooltipManager.forceHide();
+    toggleConcept(concept, cardElement) {
+        this.tooltipManager.forceHide();
+        this.lastTappedForTooltip = null;
 
         const incorrectCards = Array.from(document.querySelectorAll('.concept-card.incorrect:not(.correct)'));
         if (incorrectCards.length > 0) {
@@ -322,6 +382,26 @@ class AISafetyGame {
     submitGuess() {
         if (this.selectedConcepts.length !== CONFIG.CONCEPTS_PER_GROUP) return;
 
+        // Time since previous guess (or since game start for the first guess)
+        const now = Date.now();
+        let secondsSinceLastGuess;
+        if (this.lastGuessTimestamp) {
+            secondsSinceLastGuess = (now - this.lastGuessTimestamp) / 1000;
+        } else if (this.timerStart) {
+            secondsSinceLastGuess = (now - this.timerStart) / 1000;
+        } else {
+            secondsSinceLastGuess = 0;
+        }
+        // Avoid division by zero and negative/NaN values
+        if (!Number.isFinite(secondsSinceLastGuess) || secondsSinceLastGuess <= 0) {
+            secondsSinceLastGuess = 0.1;
+        }
+        this.lastGuessTimestamp = now;
+
+        // Keep elapsed time in sync with scoring
+        this.elapsedSeconds = Math.floor((now - this.timerStart) / 1000);
+        this.updateTimerDisplay(this.elapsedSeconds);
+
         // Dog gets worried during submission
         this.dogAnimations.updateDogMood('worried');
 
@@ -344,15 +424,18 @@ class AISafetyGame {
             this.markGroupAsCorrect(this.selectedConcepts);
             this.fillCategorySlot(matchedCategory, categoryDifficulty);
             this.solvedCategories++;
-            this.currentScore = this.computeScore(false);
+
+            // Scoring for a correct category: base + speed bonus, always at least 100
+            const rawPoints = 12000 / secondsSinceLastGuess - this.elapsedSeconds;
+            const pointsForThisCategory = Math.max(100, Math.round(rawPoints));
+            this.currentScore += pointsForThisCategory;
+            this.currentScore = Math.max(0, Math.round(this.currentScore));
             this.updateScoreDisplay(this.currentScore);
 
             this.dogAnimations.updateDogMood('celebrating');
 
             if (this.solvedCategories === this.currentPuzzle.numCategories) {
                 this.stopTimer();
-                this.currentScore = this.computeScore(true);
-                this.updateScoreDisplay(this.currentScore);
                 setTimeout(() => {
                     Sounds.win();
                     this.showWinModal();
@@ -368,7 +451,13 @@ class AISafetyGame {
             this.mistakes++;
             this.updateMistakesDisplay();
             this.markGroupAsIncorrect(this.selectedConcepts);
-            
+
+            // Scoring for a mistake:
+            // - (seconds since previous guess)
+            this.currentScore -= secondsSinceLastGuess;
+            this.currentScore = Math.max(0, Math.round(this.currentScore));
+            this.updateScoreDisplay(this.currentScore);
+
             // Dog gets progressively more sad with each mistake
             if (this.mistakes === 1) {
                 this.dogAnimations.updateDogMood('worried');
@@ -385,8 +474,6 @@ class AISafetyGame {
             
             if (this.mistakes === CONFIG.MAX_MISTAKES) {
                 this.stopTimer();
-                this.currentScore = this.computeScore(false);
-                this.updateScoreDisplay(this.currentScore);
                 this.saveResult(false);
                 setTimeout(() => {
                     Sounds.lose();
@@ -524,15 +611,6 @@ class AISafetyGame {
         this.startNewGame();
     }
 
-    closeLoseAndSave() {
-        const nameInput = document.getElementById('lose-player-name');
-        const name = (nameInput && nameInput.value.trim()) || 'Anonymous';
-        this.addToLeaderboard(name, this.currentScore, this.elapsedSeconds, this.gameMode);
-        document.getElementById('lose-modal').style.display = 'none';
-        document.getElementById('lose-player-name').value = '';
-        this.startNewGame();
-    }
-
     getLeaderboard() {
         try {
             const raw = localStorage.getItem(LEADERBOARD_KEY);
@@ -597,11 +675,6 @@ class AISafetyGame {
     }
 
     showLoseModal() {
-        const statsEl = document.getElementById('lose-stats');
-        if (statsEl) statsEl.textContent = `Score: ${this.currentScore} — Time: ${Math.floor(this.elapsedSeconds / 60)}:${(this.elapsedSeconds % 60).toString().padStart(2, '0')}`;
-        const nameInput = document.getElementById('lose-player-name');
-        if (nameInput) nameInput.value = '';
-
         const solutionContainer = document.getElementById('solution-container');
         solutionContainer.innerHTML = '';
         
