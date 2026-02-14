@@ -71,6 +71,18 @@ body {
     color: white;
 }
 
+.back-home-link {
+    font-size: 0.4em;
+    font-weight: normal;
+    color: #7f8c8d;
+    text-decoration: none;
+    margin-left: 10px;
+}
+
+.back-home-link:hover {
+    color: #3498db;
+}
+
 .version-badge {
     display: inline-block;
     font-size: 0.5em;
@@ -582,6 +594,218 @@ body {
     }
 }
 
+/* Welcome screen */
+.welcome-screen {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.welcome-content {
+    max-width: 520px;
+    padding: 40px;
+    text-align: center;
+}
+
+.welcome-content h1 {
+    color: #fff;
+    font-size: 2.2rem;
+    margin-bottom: 12px;
+}
+
+.welcome-desc {
+    color: #a0aec0;
+    margin-bottom: 30px;
+    font-size: 1rem;
+}
+
+.regime-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.regime-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    padding: 18px 20px;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.regime-btn:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: #3498db;
+}
+
+.regime-icon {
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+}
+
+.regime-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.regime-desc {
+    font-size: 0.9rem;
+    color: #a0aec0;
+    margin-top: 4px;
+}
+
+.welcome-setup {
+    margin-top: 24px;
+    font-size: 0.9rem;
+    color: #e74c3c;
+}
+
+.welcome-setup a {
+    color: #3498db;
+}
+
+/* Room modals */
+.room-result-area {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 12px 0;
+    font-size: 13px;
+    text-align: left;
+}
+
+.room-create-mode {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.room-links {
+    margin: 16px 0;
+}
+
+.room-link-row {
+    margin-bottom: 12px;
+}
+
+.room-link-row label {
+    display: block;
+    font-size: 13px;
+    color: #7f8c8d;
+    margin-bottom: 4px;
+}
+
+.room-link-box {
+    display: flex;
+    gap: 8px;
+}
+
+.room-link-box input,
+.room-link-row input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.copy-btn {
+    padding: 8px 16px;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.copy-btn:hover {
+    background: #219a52;
+}
+
+.room-results-section {
+    margin: 20px 0;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+}
+
+.room-results-section h3 {
+    font-size: 1rem;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.room-results-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+}
+
+.room-results-list .leaderboard-item {
+    margin-bottom: 6px;
+}
+
+.room-admin-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.new-game-btn.secondary {
+    background: #95a5a6;
+}
+
+.new-game-btn.secondary:hover {
+    background: #7f8c8d;
+}
+
+.lose-room-submit {
+    margin: 16px 0;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.lose-room-submit label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: #7f8c8d;
+}
+
+.lose-room-submit input {
+    width: 100%;
+    max-width: 200px;
+    padding: 8px 12px;
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.lose-room-submit button {
+    display: block;
+}
+
+#room-secret-modal input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
 @media (max-width: 480px) {
     .container {
         padding: 8px;
@@ -590,5 +814,9 @@ body {
     .concept-card {
         min-height: 48px;
         font-size: 10px;
+    }
+
+    .regime-btn {
+        padding: 14px 16px;
     }
 }

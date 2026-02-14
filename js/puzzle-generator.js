@@ -44,6 +44,17 @@ class PuzzleGenerator {
             numCategories
         };
     }
+
+    /**
+     * Use a pre-generated puzzle (e.g. from a room). Validates structure.
+     * @param {object} stored - { board, categories, numCategories }
+     */
+    static fromStored(stored) {
+        if (!stored || !Array.isArray(stored.board) || !stored.categories || typeof stored.numCategories !== 'number') {
+            throw new Error('Invalid stored puzzle');
+        }
+        return { ...stored };
+    }
 }
 
 export default PuzzleGenerator;

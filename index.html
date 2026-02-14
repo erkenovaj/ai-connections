@@ -9,9 +9,37 @@
     <link rel="stylesheet" href="css/animations.css?v=2">
 </head>
 <body>
-    <div class="container">
+    <!-- Welcome screen: choose regime -->
+    <div class="welcome-screen" id="welcome-screen">
+        <div class="welcome-content">
+            <h1>AI Safety Connections</h1>
+            <p class="welcome-desc">Create groups of four that share a common theme. Choose how you want to play:</p>
+            <div class="regime-choices">
+                <button class="regime-btn" data-regime="solo">
+                    <span class="regime-icon">🎮</span>
+                    <span class="regime-title">Solo Play</span>
+                    <span class="regime-desc">Play on your own, save scores locally</span>
+                </button>
+                <button class="regime-btn" data-regime="room-anon">
+                    <span class="regime-icon">🔗</span>
+                    <span class="regime-title">Room (Quick)</span>
+                    <span class="regime-desc">Create a room, share the link — no signup</span>
+                </button>
+                <button class="regime-btn" data-regime="room-auth">
+                    <span class="regime-icon">🔐</span>
+                    <span class="regime-title">Room (Admin Auth)</span>
+                    <span class="regime-desc">Create a room with admin password to protect results</span>
+                </button>
+            </div>
+            <p class="welcome-setup" id="welcome-setup" style="display: none;">
+                Room mode requires setup. See <a href="ROOM_SETUP.md" target="_blank">ROOM_SETUP.md</a>.
+            </p>
+        </div>
+    </div>
+
+    <div class="container" id="game-container" style="display: none;">
         <div class="header">
-            <h1>AI Safety Connections <span class="version-badge" title="Updated with new features">v2</span></h1>
+            <h1>AI Safety Connections <span class="version-badge" title="Updated with new features">v2</span> <a href="#" class="back-home-link" id="back-home-link" style="display: none;">← Home</a></h1>
             <p class="header-desc">Create four groups of four that share a common theme. Many concepts fit multiple categories. The dog is watching...</p>
             <div class="mode-toggle">
                 <button class="mode-btn active" data-mode="normal">Normal (4 categories)</button>
@@ -91,7 +119,12 @@
             <h2>Game Over</h2>
             <p>You've used all your attempts. The dog is disappointed but unharmed.</p>
             <div id="solution-container"></div>
-            <button class="new-game-btn" onclick="document.getElementById('lose-modal').style.display='none'">Try Again</button>
+            <div class="lose-room-submit" id="lose-room-submit" style="display: none;">
+                <label for="lose-player-name">Your name for results (optional):</label>
+                <input type="text" id="lose-player-name" maxlength="50" placeholder="Your name">
+                <button class="new-game-btn" id="lose-submit-btn">Submit result</button>
+            </div>
+            <button class="new-game-btn" id="lose-try-again-btn">Try Again</button>
         </div>
     </div>
 
@@ -173,6 +206,62 @@
                 </div>
             </div>
             <button class="new-game-btn guide-close-btn" style="margin-top: 20px;">Start Playing</button>
+        </div>
+    </div>
+
+    <!-- Room creation modal -->
+    <div class="modal" id="room-create-modal">
+        <div class="modal-content">
+            <h2>Create Room</h2>
+            <p>Choose game mode, then share the player link.</p>
+            <div class="room-create-mode">
+                <button class="mode-btn active" data-mode="normal">Normal</button>
+                <button class="mode-btn" data-mode="advanced">Advanced</button>
+            </div>
+            <div id="room-create-result" class="room-result-area" style="display: none;"></div>
+            <button class="new-game-btn" id="room-create-btn">Create Room</button>
+            <button class="new-game-btn secondary" id="room-create-close-btn">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Room admin panel (after creation) -->
+    <div class="modal" id="room-admin-modal">
+        <div class="modal-content">
+            <h2>Room created</h2>
+            <p>Share the player link. You can download results here when everyone is done.</p>
+            <div class="room-links">
+                <div class="room-link-row">
+                    <label>Player link (share this):</label>
+                    <div class="room-link-box">
+                        <input type="text" id="room-player-link" readonly>
+                        <button class="copy-btn" id="room-copy-link">Copy</button>
+                    </div>
+                </div>
+                <div class="room-link-row" id="room-admin-secret-row" style="display: none;">
+                    <label>Admin secret (save this to access results):</label>
+                    <input type="text" id="room-admin-secret" readonly>
+                </div>
+            </div>
+            <div class="room-results-section">
+                <h3>Results (<span id="room-result-count">0</span>)</h3>
+                <div id="room-results-list" class="room-results-list"></div>
+                <div class="room-admin-actions">
+                    <button class="new-game-btn" id="room-refresh-results">Refresh</button>
+                    <button class="new-game-btn" id="room-download-results">Download CSV</button>
+                    <button class="new-game-btn secondary" id="room-export-airtable">Export to Airtable</button>
+                </div>
+            </div>
+            <button class="new-game-btn" id="room-admin-close">Close</button>
+        </div>
+    </div>
+
+    <!-- Room join / admin secret prompt -->
+    <div class="modal" id="room-secret-modal">
+        <div class="modal-content">
+            <h2>Admin access</h2>
+            <p>Enter the admin secret for this room to view results:</p>
+            <input type="text" id="room-secret-input" placeholder="Admin secret">
+            <button class="new-game-btn" id="room-secret-submit">Continue</button>
         </div>
     </div>
 
