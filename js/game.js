@@ -46,6 +46,7 @@ class AISafetyGame {
         this.roomId = null;
         this.puzzleSeed = null;
         this.joinLink = null;
+        this.playerName = '';
         this.init();
     }
 
@@ -79,7 +80,8 @@ class AISafetyGame {
 
     bindWelcomeEvents() {
         document.getElementById('welcome-solo').onclick = () => this.startSolo();
-        document.getElementById('welcome-lobby').onclick = () => this.createRoom();
+        document.getElementById('welcome-lobby-normal').onclick = () => this.createRoom('normal');
+        document.getElementById('welcome-lobby-advanced').onclick = () => this.createRoom('advanced');
         document.getElementById('welcome-join-btn').onclick = () => this.joinRoomFromInput();
         document.getElementById('welcome-room-link').onkeydown = (e) => { if (e.key === 'Enter') this.joinRoomFromInput(); };
     }
@@ -96,8 +98,8 @@ class AISafetyGame {
         }
     }
 
-    createRoom() {
-        api.createRoom(this.gameMode).then((data) => {
+    createRoom(mode) {
+        api.createRoom(mode).then((data) => {
             window.location.search = '?room=' + data.roomId;
         }).catch((err) => {
             alert('Could not create room. Is the server running? ' + (err.message || ''));
@@ -135,8 +137,25 @@ class AISafetyGame {
         document.getElementById('lobby-copy-btn').onclick = () => this.copyRoomLink();
         document.getElementById('lobby-leaderboard-btn').onclick = () => this.showLeaderboard();
         document.getElementById('lobby-download-btn').onclick = () => this.downloadRoomResults();
-        if (!localStorage.getItem(GUIDE_SEEN_KEY)) setTimeout(() => this.showGuide(), 100);
-        this.startNewGame();
+        this.showRoomNameModal();
+    }
+
+    showRoomNameModal() {
+        const modal = document.getElementById('room-name-modal');
+        const input = document.getElementById('room-player-name');
+        const startBtn = document.getElementById('room-name-start-btn');
+        if (!modal || !input) return;
+        input.value = '';
+        modal.style.display = 'flex';
+        input.focus();
+        const start = () => {
+            this.playerName = (input.value && input.value.trim()) || 'Anonymous';
+            modal.style.display = 'none';
+            if (!localStorage.getItem(GUIDE_SEEN_KEY)) setTimeout(() => this.showGuide(), 100);
+            this.startNewGame();
+        };
+        startBtn.onclick = start;
+        input.onkeydown = (e) => { if (e.key === 'Enter') start(); };
     }
 
     copyRoomLink() {
@@ -711,14 +730,14 @@ class AISafetyGame {
         const statsEl = document.getElementById('win-stats');
         const promptEl = document.getElementById('win-name-prompt');
         if (statsEl) statsEl.textContent = `Time: ${Math.floor(this.elapsedSeconds / 60)}:${(this.elapsedSeconds % 60).toString().padStart(2, '0')} — Score: ${this.currentScore}`;
-        if (promptEl) promptEl.style.display = 'block';
-        document.getElementById('player-name').value = '';
+        if (promptEl) promptEl.style.display = this.regime === 'lobby' ? 'none' : 'block';
+        if (this.regime !== 'lobby') document.getElementById('player-name').value = '';
         document.getElementById('win-modal').style.display = 'flex';
     }
 
     async closeWinAndSave() {
         const nameInput = document.getElementById('player-name');
-        const name = (nameInput && nameInput.value.trim()) || 'Anonymous';
+        const name = this.regime === 'lobby' ? (this.playerName || 'Anonymous') : ((nameInput && nameInput.value.trim()) || 'Anonymous');
         try {
             if (this.regime === 'lobby') {
                 await api.submitRoomResult(this.roomId, {
@@ -791,7 +810,7 @@ class AISafetyGame {
         const submit = () => {
             if (this.regime === 'lobby' && this.roomId) {
                 api.submitRoomResult(this.roomId, {
-                    playerName: 'Anonymous',
+                    playerName: this.playerName || 'Anonymous',
                     score: this.currentScore,
                     timeSeconds: this.elapsedSeconds,
                     won: false

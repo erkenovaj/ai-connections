@@ -16,7 +16,11 @@
             <p class="welcome-desc">Create groups of four that share a common theme. Choose how you want to play:</p>
             <div class="welcome-choices">
                 <button type="button" class="welcome-btn welcome-solo" id="welcome-solo">Solo Play</button>
-                <button type="button" class="welcome-btn welcome-lobby" id="welcome-lobby">Create Room (multiplayer)</button>
+                <span class="welcome-lobby-label">Create Room (multiplayer):</span>
+                <div class="welcome-lobby-modes">
+                    <button type="button" class="welcome-btn welcome-lobby" id="welcome-lobby-normal">Normal (4 categories)</button>
+                    <button type="button" class="welcome-btn welcome-lobby" id="welcome-lobby-advanced">Advanced (3 categories)</button>
+                </div>
             </div>
             <div class="welcome-join">
                 <label for="welcome-room-link">Have a room link? Paste it here:</label>
@@ -98,6 +102,17 @@
 
     <!-- Tooltip element -->
     <div class="concept-tooltip" id="concept-tooltip"></div>
+
+    <!-- Modal: enter name when joining a room -->
+    <div class="modal" id="room-name-modal">
+        <div class="modal-content">
+            <h2>Join room</h2>
+            <p>Enter your name to appear on the room leaderboard:</p>
+            <label for="room-player-name">Your name</label>
+            <input type="text" id="room-player-name" maxlength="50" placeholder="Your name" class="room-name-input">
+            <button type="button" class="new-game-btn" id="room-name-start-btn">Start</button>
+        </div>
+    </div>
 
     <!-- Modals -->
     <div class="modal" id="win-modal">

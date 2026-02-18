@@ -396,6 +396,29 @@ body {
     color: #7f8c8d;
 }
 
+#room-name-modal label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.room-name-input {
+    display: block;
+    width: 100%;
+    max-width: 280px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.room-name-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
 .solution-category {
     margin: 15px 0;
     padding: 15px;
@@ -631,6 +654,18 @@ body {
     flex-direction: column;
     gap: 12px;
     margin-bottom: 28px;
+}
+
+.welcome-lobby-label {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin-top: 8px;
+}
+
+.welcome-lobby-modes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .welcome-btn {
