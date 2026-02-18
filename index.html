@@ -9,8 +9,35 @@
     <link rel="stylesheet" href="css/animations.css?v=2">
 </head>
 <body>
-    <div class="container">
+    <!-- Welcome: choose Solo or Lobby -->
+    <div class="welcome-screen" id="welcome-screen">
+        <div class="welcome-card">
+            <h1>AI Safety Connections</h1>
+            <p class="welcome-desc">Create groups of four that share a common theme. Choose how you want to play:</p>
+            <div class="welcome-choices">
+                <button type="button" class="welcome-btn welcome-solo" id="welcome-solo">Solo Play</button>
+                <button type="button" class="welcome-btn welcome-lobby" id="welcome-lobby">Create Room (multiplayer)</button>
+            </div>
+            <div class="welcome-join">
+                <label for="welcome-room-link">Have a room link? Paste it here:</label>
+                <div class="welcome-join-row">
+                    <input type="text" id="welcome-room-link" placeholder="https://...?room=abc12345">
+                    <button type="button" class="welcome-join-btn" id="welcome-join-btn">Join</button>
+                </div>
+                <p class="welcome-hint">Solo: play on your own, scores saved online. Room: same puzzle for everyone, leaderboard and download.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="game-container" style="display: none;">
         <div class="header">
+            <div class="lobby-bar" id="lobby-bar" style="display: none;">
+                <span class="lobby-label">Room:</span>
+                <input type="text" readonly class="lobby-link" id="lobby-link" value="">
+                <button type="button" class="lobby-copy-btn" id="lobby-copy-btn">Copy link</button>
+                <button type="button" class="lobby-leaderboard-btn" id="lobby-leaderboard-btn">Room leaderboard</button>
+                <button type="button" class="lobby-download-btn" id="lobby-download-btn">Download results</button>
+            </div>
             <h1>AI Safety Connections <span class="version-badge" title="Updated with new features">v2</span></h1>
             <p class="header-desc">Create four groups of four that share a common theme. Many concepts fit multiple categories. The dog is watching...</p>
             <div class="mode-toggle">
@@ -138,7 +165,7 @@
                     <ul>
                         <li>The <strong>timer</strong> runs from the start of each game until you win or lose.</li>
                         <li><strong>Score</strong> is based on correct categories, mistakes, and time. Higher is better!</li>
-                        <li>Save your name when you win to appear on the <strong>Leaderboard</strong> (stored on this device).</li>
+                        <li>Save your name when you win to appear on the <strong>Leaderboard</strong> (saved online when the server is running).</li>
                     </ul>
                 </div>
 
@@ -179,12 +206,15 @@
     <div class="modal" id="leaderboard-modal">
         <div class="modal-content">
             <h2>🏆 Leaderboard</h2>
-            <p class="leaderboard-hint">Best scores (stored on this device)</p>
+            <p class="leaderboard-hint" id="leaderboard-hint">Best scores</p>
             <div class="leaderboard-list" id="leaderboard-list"></div>
-            <button class="new-game-btn" id="leaderboard-close-btn">Close</button>
+            <div class="leaderboard-actions">
+                <button class="new-game-btn" id="leaderboard-download-btn" style="display: none;">Download results</button>
+                <button class="new-game-btn" id="leaderboard-close-btn">Close</button>
+            </div>
         </div>
     </div>
 
-    <script type="module" src="js/game.js?v=5"></script>
+    <script type="module" src="js/game.js?v=6"></script>
 </body>
 </html>

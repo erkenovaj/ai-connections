@@ -28,9 +28,10 @@ Each group has a different difficulty level:
 4. **Watch the dog** - it reacts to your progress!
 
 #### Features
+- **Solo or Lobby** - Choose solo play (scores saved online when server runs) or create a room and invite others by link; everyone gets the same puzzle and results appear on the room leaderboard (downloadable).
 - **Normal / Advanced** - Toggle between 4-category and 3-category (with decoys) modes
 - **Timer & score** - Each game is timed; score is based on correct groups, mistakes, and speed
-- **Leaderboard** - Save your name when you win; best scores stored on your device
+- **Leaderboard** - Save your name when you win; best scores saved online (or on device if server is not running)
 - **Hover (or tap on mobile)** over concepts to see definitions when hints are ON
 - **Dictionary** with all concept explanations
 - **Sound effects** for correct, wrong, win, and lose
@@ -45,7 +46,21 @@ Your canine companion shows different emotions:
 - 🎉 **Celebrating** - When you solve puzzles
 - 😴 **Sleeping** - When the game ends
 
+### 🖥️ Running with the server (Solo + Lobby and online leaderboard)
+
+For **solo scores saved online** and **lobby (multiplayer) rooms**, run the Node server so the app can use the SQLite backend:
+
+1. Install dependencies: `npm install`
+2. Start the server: `npm start`
+3. Open **http://localhost:3000** in your browser
+
+You’ll see a welcome screen: **Solo Play** (scores stored in the database) or **Create Room** (get a shareable link; everyone who joins gets the same puzzle; room leaderboard and downloadable results). No authentication—join by link only.
+
+The SQLite database is created in the `data/` folder (auto-created on first run).
+
 ### 🌐 Deploying to GitHub Pages
+
+GitHub Pages serves the app as **static files only**. Lobby (rooms) and online leaderboard require the Node server (run it on your machine or host the backend elsewhere).
 
 **Option A – Deploy from a branch (simplest)**  
 1. Push this repo to GitHub (include `js/category-templates.json` so puzzles load correctly).  
