@@ -114,6 +114,8 @@ class AISafetyGame {
         this.puzzleSeed = null;
         this.joinLink = null;
         document.getElementById('lobby-bar').style.display = 'none';
+        const lbBtn = document.querySelector('.leaderboard-btn');
+        if (lbBtn) lbBtn.style.display = '';
         document.querySelectorAll('.mode-btn').forEach(btn => { btn.disabled = false; });
         if (document.getElementById('leaderboard-download-btn')) document.getElementById('leaderboard-download-btn').style.display = 'none';
         if (!localStorage.getItem(GUIDE_SEEN_KEY)) setTimeout(() => this.showGuide(), 100);
@@ -134,6 +136,7 @@ class AISafetyGame {
         const linkEl = document.getElementById('lobby-link');
         if (linkEl) linkEl.value = this.joinLink;
         document.querySelectorAll('.mode-btn').forEach(btn => { btn.disabled = true; });
+        document.querySelector('.leaderboard-btn').style.display = 'none';
         document.getElementById('lobby-copy-btn').onclick = () => this.copyRoomLink();
         document.getElementById('lobby-leaderboard-btn').onclick = () => this.showLeaderboard();
         document.getElementById('lobby-download-btn').onclick = () => this.downloadRoomResults();
@@ -207,6 +210,7 @@ class AISafetyGame {
         });
         document.getElementById('win-save-btn').addEventListener('click', () => this.closeWinAndSave());
         document.getElementById('leaderboard-close-btn').addEventListener('click', () => document.getElementById('leaderboard-modal').style.display = 'none');
+        document.getElementById('home-btn').addEventListener('click', () => { window.location = window.location.pathname || '/'; });
         const dlBtn = document.getElementById('leaderboard-download-btn');
         if (dlBtn) dlBtn.addEventListener('click', () => this.downloadRoomResults());
 
@@ -440,6 +444,7 @@ class AISafetyGame {
     }
 
     handleCardClick(concept, cardElement, e) {
+        if (cardElement.classList.contains('correct')) return;
         if (isTouchDevice() && this.hintsEnabled && !this.selectedConcepts.includes(concept)) {
             // If already 3 selected, allow single-tap to add the 4th (no tooltip required)
             if (this.selectedConcepts.length === CONFIG.CONCEPTS_PER_GROUP - 1) {
@@ -462,6 +467,7 @@ class AISafetyGame {
     }
 
     toggleConcept(concept, cardElement) {
+        if (cardElement.classList.contains('correct')) return;
         this.tooltipManager.forceHide();
         this.lastTappedForTooltip = null;
 

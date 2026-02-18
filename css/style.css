@@ -35,6 +35,24 @@ body {
     margin-bottom: 10px;
 }
 
+.home-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 8px 14px;
+    font-size: 14px;
+    border: 1px solid #bdc3c7;
+    border-radius: 6px;
+    background: white;
+    color: #7f8c8d;
+    cursor: pointer;
+}
+
+.home-btn:hover {
+    border-color: #3498db;
+    color: #3498db;
+}
+
 .header p,
 .header .header-desc {
     color: #7f8c8d;
