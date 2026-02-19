@@ -892,16 +892,16 @@ class AISafetyGame {
         const total = this.totalRounds ? Number(this.totalRounds) : 1;
 
         if (isLobby) {
-            // In lobby mode, always show round info and "Next game",
-            // regardless of how many rounds were chosen.
+            // Lobby mode: always show round info.
             if (roundInfoEl) {
                 roundInfoEl.style.display = 'block';
                 roundInfoEl.textContent = `Round ${this.currentRound} of ${total}`;
             }
+            // Hide save button in lobby; use the secondary button for next/close.
             if (saveBtn) saveBtn.style.display = 'none';
             if (nextBtn) {
                 nextBtn.style.display = 'inline-block';
-                nextBtn.textContent = 'Next game';
+                nextBtn.textContent = (total > 1 && this.currentRound < total) ? 'Next game' : 'Close';
             }
         } else {
             // Solo play: no round info, show save button as before
@@ -964,12 +964,16 @@ class AISafetyGame {
             console.error('Failed to submit round result:', e);
         }
         if (this.currentRound < this.totalRounds) {
+            // Advance to next round and start a new puzzle.
             this.currentRound++;
             localStorage.setItem(`room_round_${this.roomId}`, this.currentRound.toString());
             this.puzzleSeed = this.generateRoundSeed(this.currentRound);
             document.getElementById('win-modal').style.display = 'none';
             this.updateRoundDisplay();
             this.startNewGame();
+        } else {
+            // Final round: just close the modal, stay on the finished puzzle.
+            document.getElementById('win-modal').style.display = 'none';
         }
     }
 

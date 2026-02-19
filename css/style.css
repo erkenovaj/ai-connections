@@ -13,7 +13,7 @@ body {
 }
 
 .container {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
     position: relative;
@@ -183,31 +183,48 @@ body {
     font-size: 1.2rem;
     font-weight: 600;
     color: #2c3e50;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     padding: 8px;
     background: #e8f4fc;
     border-radius: 6px;
 }
 
+.game-main {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.game-left {
+    flex: 3.6;
+}
+
+.game-right {
+    flex: 2.4;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
 .game-board {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-bottom: 30px;
+    gap: 12px;
+    margin-bottom: 0;
 }
 
 .concept-card {
     background: white;
     border: 2px solid #bdc3c7;
     border-radius: 6px;
-    padding: 15px 8px;
+    padding: 22px 18px;
     text-align: center;
     cursor: pointer;
     font-weight: 500;
-    font-size: 13px;
+    font-size: 17px;
     transition: all 0.2s ease;
     user-select: none;
-    min-height: 70px;
+    min-height: 105px;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -325,8 +342,8 @@ body {
     background: white;
     border: 2px dashed #bdc3c7;
     border-radius: 8px;
-    padding: 15px;
-    min-height: 80px;
+    padding: 22px;
+    min-height: 115px;
 }
 
 .category-slot.filled {
@@ -337,7 +354,7 @@ body {
 
 .category-name {
     font-weight: 600;
-    font-size: 14px;
+    font-size: 17px;
     color: #2c3e50;
 }
 
@@ -612,6 +629,10 @@ body {
         grid-template-columns: 1fr;
     }
 
+    .game-main {
+        flex-direction: column;
+    }
+
     .controls {
         flex-direction: column;
     }
@@ -648,6 +669,11 @@ body {
         min-height: 48px;
         font-size: 10px;
     }
+
+    /* Stack solo / lobby sections vertically on very small screens */
+    .welcome-choices {
+        flex-direction: column;
+    }
 }
 
 /* Welcome screen */
@@ -664,8 +690,8 @@ body {
     background: white;
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    padding: 40px;
-    max-width: 440px;
+    padding: 32px;
+    max-width: 900px;
     width: 100%;
 }
 
@@ -679,14 +705,16 @@ body {
 .welcome-desc {
     color: #7f8c8d;
     font-size: 1rem;
-    margin-bottom: 24px;
+    margin-bottom: 18px;
     text-align: center;
 }
 
 .welcome-choices {
     display: flex;
-    flex-direction: column;
-    gap: 24px;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 20px;
     margin-bottom: 28px;
 }
 
@@ -695,6 +723,9 @@ body {
     border-radius: 8px;
     padding: 16px;
     background: #fafafa;
+    flex: 1;
+    min-width: 300px;
+    max-width: 380px;
 }
 
 .welcome-solo-section h3, .welcome-lobby-section h3 {

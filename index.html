@@ -106,33 +106,38 @@
 
         <div class="round-display" id="round-display" style="display: none;"></div>
 
-        <div class="game-board" id="game-board">
-            <!-- 16 concepts will be inserted here by JavaScript -->
-        </div>
+        <div class="game-main">
+            <div class="game-left">
+                <div class="game-board" id="game-board">
+                    <!-- 16 concepts will be inserted here by JavaScript -->
+                </div>
+            </div>
+            <div class="game-right">
+                <div class="category-slots slots-4" id="category-slots">
+                    <div class="category-slot" data-difficulty="easy">
+                        <div class="category-name">Category 1</div>
+                        <div class="category-concepts"></div>
+                    </div>
+                    <div class="category-slot" data-difficulty="medium">
+                        <div class="category-name">Category 2</div>
+                        <div class="category-concepts"></div>
+                    </div>
+                    <div class="category-slot" data-difficulty="hard">
+                        <div class="category-name">Category 3</div>
+                        <div class="category-concepts"></div>
+                    </div>
+                    <div class="category-slot category-slot-4th" data-difficulty="harder">
+                        <div class="category-name">Category 4</div>
+                        <div class="category-concepts"></div>
+                    </div>
+                </div>
 
-        <div class="category-slots slots-4" id="category-slots">
-            <div class="category-slot" data-difficulty="easy">
-                <div class="category-name">Category 1</div>
-                <div class="category-concepts"></div>
+                <div class="controls">
+                    <button class="submit-btn" id="submit-btn" disabled>Submit</button>
+                    <button class="deselect-btn" id="deselect-btn">Deselect All</button>
+                    <button class="new-game-btn" id="new-game-btn">New Game</button>
+                </div>
             </div>
-            <div class="category-slot" data-difficulty="medium">
-                <div class="category-name">Category 2</div>
-                <div class="category-concepts"></div>
-            </div>
-            <div class="category-slot" data-difficulty="hard">
-                <div class="category-name">Category 3</div>
-                <div class="category-concepts"></div>
-            </div>
-            <div class="category-slot category-slot-4th" data-difficulty="harder">
-                <div class="category-name">Category 4</div>
-                <div class="category-concepts"></div>
-            </div>
-        </div>
-
-        <div class="controls">
-            <button class="submit-btn" id="submit-btn" disabled>Submit</button>
-            <button class="deselect-btn" id="deselect-btn">Deselect All</button>
-            <button class="new-game-btn" id="new-game-btn">New Game</button>
         </div>
     </div>
 
