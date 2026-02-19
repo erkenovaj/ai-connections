@@ -3,6 +3,7 @@ import TooltipManager from './tooltip.js';
 import DogAnimations from './dog-animations.js';
 import Sounds from './sounds.js';
 import { CONFIG, CONCEPT_DEFINITIONS } from './config.js';
+import * as api from './api.js';
 
 const LEADERBOARD_KEY = 'ai_connections_leaderboard';
 const GUIDE_SEEN_KEY = 'ai_connections_guide_seen';
@@ -10,9 +11,11 @@ const MAX_LEADERBOARD_ENTRIES = 20;
 
 function parseUrlConfig() {
     const params = new URLSearchParams(window.location.search);
+    const room = params.get('room');
     return {
         mode: params.get('mode') === 'advanced' ? 'advanced' : (params.get('mode') === 'normal' ? 'normal' : null),
-        showGuide: params.get('guide') !== '0'
+        showGuide: params.get('guide') !== '0',
+        roomId: room || null
     };
 }
 
@@ -39,6 +42,11 @@ class AISafetyGame {
         this.lastTappedForTooltip = null;
         this.lastGuessTimestamp = null;
         this.conceptCategoryMap = {};
+        this.regime = 'solo';
+        this.roomId = null;
+        this.puzzleSeed = null;
+        this.joinLink = null;
+        this.playerName = '';
         this.init();
     }
 
@@ -52,10 +60,136 @@ class AISafetyGame {
         this.updateHeaderDesc();
         this.updateTimerDisplay(0);
         this.updateScoreDisplay(null);
-        if (urlConfig.showGuide && !localStorage.getItem(GUIDE_SEEN_KEY)) {
-            setTimeout(() => this.showGuide(), 100);
+
+        if (urlConfig.roomId) {
+            api.getRoom(urlConfig.roomId).then((data) => {
+                this.showGameWithRoom(data);
+            }).catch(() => {
+                this.showWelcome();
+            });
+            return;
         }
+        this.showWelcome();
+    }
+
+    showWelcome() {
+        document.getElementById('welcome-screen').style.display = 'flex';
+        document.getElementById('game-container').style.display = 'none';
+        this.bindWelcomeEvents();
+    }
+
+    bindWelcomeEvents() {
+        document.getElementById('welcome-solo').onclick = () => this.startSolo();
+        document.getElementById('welcome-lobby-normal').onclick = () => this.createRoom('normal');
+        document.getElementById('welcome-lobby-advanced').onclick = () => this.createRoom('advanced');
+        document.getElementById('welcome-join-btn').onclick = () => this.joinRoomFromInput();
+        document.getElementById('welcome-room-link').onkeydown = (e) => { if (e.key === 'Enter') this.joinRoomFromInput(); };
+    }
+
+    joinRoomFromInput() {
+        const input = document.getElementById('welcome-room-link');
+        const raw = (input && input.value && input.value.trim()) || '';
+        const match = raw.match(/room=([a-z0-9]+)/i) || (raw.length >= 6 && !raw.includes(' ') ? [{}, raw] : null);
+        const roomId = match ? (match[1] || match[0]).toLowerCase() : null;
+        if (roomId) {
+            window.location.search = '?room=' + roomId;
+        } else {
+            alert('Paste a full room link (e.g. https://...?room=abc12345) or enter the room code.');
+        }
+    }
+
+    createRoom(mode) {
+        api.createRoom(mode).then((data) => {
+            window.location.search = '?room=' + data.roomId;
+        }).catch((err) => {
+            alert('Could not create room. Is the server running? ' + (err.message || ''));
+        });
+    }
+
+    startSolo() {
+        document.getElementById('welcome-screen').style.display = 'none';
+        document.getElementById('game-container').style.display = 'block';
+        this.regime = 'solo';
+        this.roomId = null;
+        this.puzzleSeed = null;
+        this.joinLink = null;
+        document.getElementById('lobby-bar').style.display = 'none';
+        const lbBtn = document.querySelector('.leaderboard-btn');
+        if (lbBtn) lbBtn.style.display = '';
+        document.querySelectorAll('.mode-btn').forEach(btn => { btn.disabled = false; });
+        if (document.getElementById('leaderboard-download-btn')) document.getElementById('leaderboard-download-btn').style.display = 'none';
+        if (!localStorage.getItem(GUIDE_SEEN_KEY)) setTimeout(() => this.showGuide(), 100);
         this.startNewGame();
+    }
+
+    showGameWithRoom(roomData) {
+        document.getElementById('welcome-screen').style.display = 'none';
+        document.getElementById('game-container').style.display = 'block';
+        this.regime = 'lobby';
+        this.roomId = roomData.roomId;
+        this.puzzleSeed = roomData.seed;
+        this.joinLink = window.location.href.split('?')[0] + '?room=' + this.roomId;
+        this.gameMode = roomData.mode === 'advanced' ? 'advanced' : 'normal';
+        this.updateModeToggle();
+        this.updateHeaderDesc();
+        document.getElementById('lobby-bar').style.display = 'flex';
+        const linkEl = document.getElementById('lobby-link');
+        if (linkEl) linkEl.value = this.joinLink;
+        document.querySelectorAll('.mode-btn').forEach(btn => { btn.disabled = true; });
+        document.querySelector('.leaderboard-btn').style.display = 'none';
+        document.getElementById('lobby-copy-btn').onclick = () => this.copyRoomLink();
+        document.getElementById('lobby-leaderboard-btn').onclick = () => this.showLeaderboard();
+        document.getElementById('lobby-download-btn').onclick = () => this.downloadRoomResults();
+        this.showRoomNameModal();
+    }
+
+    showRoomNameModal() {
+        const modal = document.getElementById('room-name-modal');
+        const input = document.getElementById('room-player-name');
+        const startBtn = document.getElementById('room-name-start-btn');
+        if (!modal || !input) return;
+        input.value = '';
+        modal.style.display = 'flex';
+        input.focus();
+        const start = () => {
+            this.playerName = (input.value && input.value.trim()) || 'Anonymous';
+            modal.style.display = 'none';
+            if (!localStorage.getItem(GUIDE_SEEN_KEY)) setTimeout(() => this.showGuide(), 100);
+            this.startNewGame();
+        };
+        startBtn.onclick = start;
+        input.onkeydown = (e) => { if (e.key === 'Enter') start(); };
+    }
+
+    copyRoomLink() {
+        if (!this.joinLink) return;
+        navigator.clipboard.writeText(this.joinLink).then(() => {
+            const btn = document.getElementById('lobby-copy-btn');
+            const orig = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => { btn.textContent = orig; }, 1500);
+        });
+    }
+
+    async downloadRoomResults() {
+        if (this.regime !== 'lobby' || !this.roomId) return;
+        try {
+            const rows = await api.getRoomLeaderboard(this.roomId);
+            const headers = ['Rank', 'Name', 'Score', 'Time (s)', 'Won', 'Date'];
+            const lines = [headers.join(',')];
+            rows.forEach((r, i) => {
+                const date = r.createdAt ? new Date(r.createdAt).toISOString() : '';
+                lines.push([i + 1, `"${(r.playerName || '').replace(/"/g, '""')}"`, r.score, r.timeSeconds, r.won ? 'Yes' : 'No', date].join(','));
+            });
+            const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `room-${this.roomId}-results.csv`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        } catch (e) {
+            alert('Could not download: ' + (e.message || ''));
+        }
     }
 
     bindEvents() {
@@ -76,6 +210,9 @@ class AISafetyGame {
         });
         document.getElementById('win-save-btn').addEventListener('click', () => this.closeWinAndSave());
         document.getElementById('leaderboard-close-btn').addEventListener('click', () => document.getElementById('leaderboard-modal').style.display = 'none');
+        document.getElementById('home-btn').addEventListener('click', () => { window.location = window.location.pathname || '/'; });
+        const dlBtn = document.getElementById('leaderboard-download-btn');
+        if (dlBtn) dlBtn.addEventListener('click', () => this.downloadRoomResults());
 
         document.querySelectorAll('.mode-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.setGameMode(e.target.dataset.mode));
@@ -203,7 +340,8 @@ class AISafetyGame {
         this.currentScore = 0;
         this.updateTimerDisplay(0);
         this.updateScoreDisplay(null);
-        this.currentPuzzle = PuzzleGenerator.generatePuzzle(this.gameMode);
+        const seed = this.regime === 'lobby' ? this.puzzleSeed : null;
+        this.currentPuzzle = PuzzleGenerator.generatePuzzle(this.gameMode, seed);
         this.selectedConcepts = [];
         this.mistakes = 0;
         this.solvedCategories = 0;
@@ -306,6 +444,7 @@ class AISafetyGame {
     }
 
     handleCardClick(concept, cardElement, e) {
+        if (cardElement.classList.contains('correct')) return;
         if (isTouchDevice() && this.hintsEnabled && !this.selectedConcepts.includes(concept)) {
             // If already 3 selected, allow single-tap to add the 4th (no tooltip required)
             if (this.selectedConcepts.length === CONFIG.CONCEPTS_PER_GROUP - 1) {
@@ -328,6 +467,7 @@ class AISafetyGame {
     }
 
     toggleConcept(concept, cardElement) {
+        if (cardElement.classList.contains('correct')) return;
         this.tooltipManager.forceHide();
         this.lastTappedForTooltip = null;
 
@@ -596,27 +736,65 @@ class AISafetyGame {
         const statsEl = document.getElementById('win-stats');
         const promptEl = document.getElementById('win-name-prompt');
         if (statsEl) statsEl.textContent = `Time: ${Math.floor(this.elapsedSeconds / 60)}:${(this.elapsedSeconds % 60).toString().padStart(2, '0')} — Score: ${this.currentScore}`;
-        if (promptEl) promptEl.style.display = 'block';
-        document.getElementById('player-name').value = '';
+        if (promptEl) promptEl.style.display = this.regime === 'lobby' ? 'none' : 'block';
+        if (this.regime !== 'lobby') document.getElementById('player-name').value = '';
         document.getElementById('win-modal').style.display = 'flex';
     }
 
-    closeWinAndSave() {
+    async closeWinAndSave() {
         const nameInput = document.getElementById('player-name');
-        const name = (nameInput && nameInput.value.trim()) || 'Anonymous';
-        this.addToLeaderboard(name, this.currentScore, this.elapsedSeconds, this.gameMode);
-        this.saveResult(true);
+        const name = this.regime === 'lobby' ? (this.playerName || 'Anonymous') : ((nameInput && nameInput.value.trim()) || 'Anonymous');
+        try {
+            if (this.regime === 'lobby') {
+                await api.submitRoomResult(this.roomId, {
+                    playerName: name,
+                    score: this.currentScore,
+                    timeSeconds: this.elapsedSeconds,
+                    won: true
+                });
+            } else {
+                await api.submitSoloResult({
+                    playerName: name,
+                    score: this.currentScore,
+                    timeSeconds: this.elapsedSeconds,
+                    mode: this.gameMode
+                });
+                this.addToLeaderboard(name, this.currentScore, this.elapsedSeconds, this.gameMode);
+            }
+        } catch (e) {
+            if (this.regime === 'solo') {
+                this.addToLeaderboard(name, this.currentScore, this.elapsedSeconds, this.gameMode);
+            }
+        }
         document.getElementById('win-modal').style.display = 'none';
         document.getElementById('win-name-prompt').style.display = 'none';
         this.startNewGame();
     }
 
-    getLeaderboard() {
+    async getLeaderboard() {
+        if (this.regime === 'lobby' && this.roomId) {
+            try {
+                return await api.getRoomLeaderboard(this.roomId);
+            } catch {
+                return [];
+            }
+        }
         try {
-            const raw = localStorage.getItem(LEADERBOARD_KEY);
-            return raw ? JSON.parse(raw) : [];
+            const rows = await api.getSoloLeaderboard(this.gameMode, MAX_LEADERBOARD_ENTRIES);
+            return rows.map(r => ({
+                name: r.playerName,
+                score: r.score,
+                time: r.timeSeconds,
+                mode: r.mode,
+                date: r.createdAt
+            }));
         } catch {
-            return [];
+            try {
+                const raw = localStorage.getItem(LEADERBOARD_KEY);
+                return raw ? JSON.parse(raw) : [];
+            } catch {
+                return [];
+            }
         }
     }
 
@@ -635,15 +813,27 @@ class AISafetyGame {
     }
 
     saveResult(won) {
+        const submit = () => {
+            if (this.regime === 'lobby' && this.roomId) {
+                api.submitRoomResult(this.roomId, {
+                    playerName: this.playerName || 'Anonymous',
+                    score: this.currentScore,
+                    timeSeconds: this.elapsedSeconds,
+                    won: false
+                }).catch(() => {});
+            } else if (this.regime === 'solo') {
+                api.submitSoloResult({
+                    playerName: 'Anonymous',
+                    score: this.currentScore,
+                    timeSeconds: this.elapsedSeconds,
+                    mode: this.gameMode
+                }).catch(() => {});
+            }
+        };
+        submit();
         try {
             const key = 'ai_connections_recent';
-            const entry = {
-                won,
-                score: this.currentScore,
-                time: this.elapsedSeconds,
-                mode: this.gameMode,
-                date: new Date().toISOString()
-            };
+            const entry = { won, score: this.currentScore, time: this.elapsedSeconds, mode: this.gameMode, date: new Date().toISOString() };
             let recent = [];
             try {
                 const raw = localStorage.getItem(key);
@@ -655,19 +845,31 @@ class AISafetyGame {
         } catch (_) {}
     }
 
-    showLeaderboard() {
-        const list = this.getLeaderboard();
+    async showLeaderboard() {
         const container = document.getElementById('leaderboard-list');
+        const hintEl = document.getElementById('leaderboard-hint');
+        const downloadBtn = document.getElementById('leaderboard-download-btn');
         if (!container) return;
+        container.innerHTML = '<p>Loading…</p>';
+        const list = await this.getLeaderboard();
         container.innerHTML = '';
+        if (hintEl) {
+            hintEl.textContent = this.regime === 'lobby' ? 'Room results (same puzzle)' : 'Best scores (saved online)';
+        }
+        if (downloadBtn) {
+            downloadBtn.style.display = this.regime === 'lobby' ? 'inline-block' : 'none';
+        }
         if (list.length === 0) {
             container.innerHTML = '<p class="leaderboard-hint">No scores yet. Win a game and enter your name to appear here!</p>';
         } else {
             list.forEach((entry, i) => {
                 const div = document.createElement('div');
                 div.className = 'leaderboard-item' + (i < 3 ? ` rank-${i + 1}` : '');
-                const timeStr = `${Math.floor(entry.time / 60)}:${(entry.time % 60).toString().padStart(2, '0')}`;
-                div.innerHTML = `<span><strong>#${i + 1}</strong> ${entry.name}</span><span>${entry.score} pts · ${timeStr}</span>`;
+                const time = entry.timeSeconds != null ? entry.timeSeconds : entry.time;
+                const name = entry.playerName != null ? entry.playerName : entry.name;
+                const timeStr = `${Math.floor(time / 60)}:${(time % 60).toString().padStart(2, '0')}`;
+                const wonStr = entry.won !== undefined ? (entry.won ? ' ✓' : '') : '';
+                div.innerHTML = `<span><strong>#${i + 1}</strong> ${name}</span><span>${entry.score} pts · ${timeStr}${wonStr}</span>`;
                 container.appendChild(div);
             });
         }
