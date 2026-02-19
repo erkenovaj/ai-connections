@@ -46,17 +46,30 @@ Your canine companion shows different emotions:
 - 🎉 **Celebrating** - When you solve puzzles
 - 😴 **Sleeping** - When the game ends
 
-### 🖥️ Running with the server (Solo + Lobby and online leaderboard)
+### 🖥️ Running with the Node server (Solo + Lobby + online leaderboard)
 
-For **solo scores saved online** and **lobby (multiplayer) rooms**, run the Node server so the app can use the SQLite backend:
+For **solo scores saved online** and **lobby (multiplayer) rooms**, run the integrated Node + SQLite backend:
 
-1. Install dependencies: `npm install`
-2. Start the server: `npm start`
-3. Open **http://localhost:3000** in your browser
+```bash
+# 1. Install dependencies
+npm install
 
-You’ll see a welcome screen: **Solo Play** (scores stored in the database) or **Create Room** (get a shareable link; everyone who joins gets the same puzzle; room leaderboard and downloadable results). No authentication—join by link only.
+# 2. Start the server
+npm start
+```
 
-The SQLite database is created in the `data/` folder (auto-created on first run).
+Then open **http://localhost:3000** in your browser.
+
+You’ll see a welcome screen where you can:
+- **Solo Play** – single‑player games, scores stored in the SQLite database
+- **Create Room** – create a lobby with:
+  - Normal or Advanced mode
+  - Optional custom category templates (JSON)
+  - A configurable number of rounds (1–10)
+
+Everyone who joins the room via the link gets the **same sequence of puzzles**; each player progresses at their own pace. The room leaderboard shows per‑round results and can be downloaded as CSV.
+
+The SQLite database file is created in the `data/` folder (auto‑created on first run).
 
 ### 🌐 Deploying to GitHub Pages
 
