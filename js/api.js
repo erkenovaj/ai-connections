@@ -4,11 +4,11 @@
  */
 const getBase = () => (typeof window !== 'undefined' ? window.location.origin : '');
 
-export async function createRoom(mode = 'normal') {
+export async function createRoom(mode = 'normal', rounds = 1) {
     const res = await fetch(`${getBase()}/api/room`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode })
+        body: JSON.stringify({ mode, rounds })
     });
     if (!res.ok) throw new Error(await res.text());
     return res.json();
@@ -20,11 +20,11 @@ export async function getRoom(roomId) {
     return res.json();
 }
 
-export async function submitRoomResult(roomId, { playerName, score, timeSeconds, won }) {
+export async function submitRoomResult(roomId, { playerName, score, timeSeconds, won, roundNumber }) {
     const res = await fetch(`${getBase()}/api/room/${roomId}/result`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerName, score, timeSeconds, won })
+        body: JSON.stringify({ playerName, score, timeSeconds, won, roundNumber })
     });
     if (!res.ok) throw new Error(await res.text());
     return res.json();

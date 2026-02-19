@@ -45,8 +45,12 @@ class AISafetyGame {
         this.regime = 'solo';
         this.roomId = null;
         this.puzzleSeed = null;
+        this.baseSeed = null;
         this.joinLink = null;
         this.playerName = '';
+        this.customTemplates = null;
+        this.currentRound = 1;
+        this.totalRounds = 1;
         this.init();
     }
 
@@ -80,10 +84,60 @@ class AISafetyGame {
 
     bindWelcomeEvents() {
         document.getElementById('welcome-solo').onclick = () => this.startSolo();
-        document.getElementById('welcome-lobby-normal').onclick = () => this.createRoom('normal');
-        document.getElementById('welcome-lobby-advanced').onclick = () => this.createRoom('advanced');
+        document.getElementById('welcome-lobby-create').onclick = () => this.createRoomWithOptions();
         document.getElementById('welcome-join-btn').onclick = () => this.joinRoomFromInput();
         document.getElementById('welcome-room-link').onkeydown = (e) => { if (e.key === 'Enter') this.joinRoomFromInput(); };
+        
+        document.querySelectorAll('.welcome-mode-btn').forEach(btn => {
+            btn.onclick = (e) => {
+                const regime = e.target.dataset.regime;
+                const mode = e.target.dataset.mode;
+                document.querySelectorAll(`.welcome-mode-btn[data-regime="${regime}"]`).forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                if (regime === 'solo') this.gameMode = mode;
+            };
+        });
+        
+        document.getElementById('solo-templates-btn').onclick = () => document.getElementById('solo-templates-file').click();
+        document.getElementById('lobby-templates-btn').onclick = () => document.getElementById('lobby-templates-file').click();
+        
+        document.getElementById('solo-templates-file').onchange = (e) => this.handleTemplateFile(e, 'solo');
+        document.getElementById('lobby-templates-file').onchange = (e) => this.handleTemplateFile(e, 'lobby');
+        
+        const roundsSlider = document.getElementById('lobby-rounds');
+        const roundsValue = document.getElementById('lobby-rounds-value');
+        roundsSlider.oninput = (e) => { roundsValue.textContent = e.target.value; };
+    }
+
+    handleTemplateFile(event, regime) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const json = JSON.parse(e.target.result);
+                if (!Array.isArray(json) || json.length === 0) throw new Error('Invalid format');
+                json.forEach(cat => {
+                    if (!cat.name || !Array.isArray(cat.members) || cat.members.length !== 4) throw new Error('Invalid format');
+                });
+                if (regime === 'solo') {
+                    this.customTemplates = json;
+                    document.getElementById('solo-templates-name').textContent = file.name;
+                } else {
+                    this.customTemplates = json;
+                    document.getElementById('lobby-templates-name').textContent = file.name;
+                }
+            } catch (err) {
+                alert('Invalid JSON file. Expected array of categories with name and members (4 items each).');
+                event.target.value = '';
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    getSelectedMode(regime) {
+        const btn = document.querySelector(`.welcome-mode-btn.active[data-regime="${regime}"]`);
+        return btn ? btn.dataset.mode : 'normal';
     }
 
     joinRoomFromInput() {
@@ -98,8 +152,21 @@ class AISafetyGame {
         }
     }
 
-    createRoom(mode) {
-        api.createRoom(mode).then((data) => {
+    createRoomWithOptions() {
+        const mode = this.getSelectedMode('lobby');
+        const roundsInput = document.getElementById('lobby-rounds');
+        if (!roundsInput) {
+            alert('Error: Could not find rounds input');
+            return;
+        }
+        const rounds = Math.max(1, Math.min(10, parseInt(roundsInput.value, 10) || 1));
+        const templates = this.customTemplates;
+        api.createRoom(mode, rounds).then((data) => {
+            // Store creator-specific settings keyed by room ID for this browser
+            sessionStorage.setItem(`room_rounds_${data.roomId}`, String(rounds));
+            if (templates) {
+                sessionStorage.setItem(`room_templates_${data.roomId}`, JSON.stringify(templates));
+            }
             window.location.search = '?room=' + data.roomId;
         }).catch((err) => {
             alert('Could not create room. Is the server running? ' + (err.message || ''));
@@ -107,17 +174,29 @@ class AISafetyGame {
     }
 
     startSolo() {
+        const mode = this.getSelectedMode('solo');
+        this.gameMode = mode;
+        const templates = this.customTemplates;
+        if (templates) {
+            this.customTemplates = templates;
+        }
         document.getElementById('welcome-screen').style.display = 'none';
         document.getElementById('game-container').style.display = 'block';
         this.regime = 'solo';
         this.roomId = null;
         this.puzzleSeed = null;
         this.joinLink = null;
+        this.currentRound = 1;
+        this.totalRounds = 1;
         document.getElementById('lobby-bar').style.display = 'none';
+        document.querySelector('.header').classList.remove('has-lobby-bar');
         const lbBtn = document.querySelector('.leaderboard-btn');
         if (lbBtn) lbBtn.style.display = '';
         document.querySelectorAll('.mode-btn').forEach(btn => { btn.disabled = false; });
         if (document.getElementById('leaderboard-download-btn')) document.getElementById('leaderboard-download-btn').style.display = 'none';
+        this.updateModeToggle();
+        this.updateHeaderDesc();
+        this.updateRoundDisplay();
         if (!localStorage.getItem(GUIDE_SEEN_KEY)) setTimeout(() => this.showGuide(), 100);
         this.startNewGame();
     }
@@ -127,12 +206,34 @@ class AISafetyGame {
         document.getElementById('game-container').style.display = 'block';
         this.regime = 'lobby';
         this.roomId = roomData.roomId;
-        this.puzzleSeed = roomData.seed;
+        // Prefer locally stored rounds for the room (creator’s choice), fall back to server value
+        const storedRounds = sessionStorage.getItem(`room_rounds_${this.roomId}`);
+        if (storedRounds !== null && storedRounds !== undefined) {
+            this.totalRounds = Number(storedRounds) || 1;
+        } else {
+            this.totalRounds = roomData.rounds !== undefined && roomData.rounds !== null
+                ? Number(roomData.rounds)
+                : 1;
+        }
+        this.baseSeed = roomData.seed || `${this.roomId}-${Date.now()}`;
+        const storedRound = localStorage.getItem(`room_round_${this.roomId}`);
+        this.currentRound = storedRound ? parseInt(storedRound, 10) : 1;
+        if (this.currentRound > this.totalRounds) {
+            this.currentRound = this.totalRounds;
+        }
+        this.puzzleSeed = this.generateRoundSeed(this.currentRound);
         this.joinLink = window.location.href.split('?')[0] + '?room=' + this.roomId;
         this.gameMode = roomData.mode === 'advanced' ? 'advanced' : 'normal';
+        const storedTemplates = sessionStorage.getItem(`room_templates_${this.roomId}`);
+        if (storedTemplates) {
+            try {
+                this.customTemplates = JSON.parse(storedTemplates);
+            } catch {}
+        }
         this.updateModeToggle();
         this.updateHeaderDesc();
         document.getElementById('lobby-bar').style.display = 'flex';
+        document.querySelector('.header').classList.add('has-lobby-bar');
         const linkEl = document.getElementById('lobby-link');
         if (linkEl) linkEl.value = this.joinLink;
         document.querySelectorAll('.mode-btn').forEach(btn => { btn.disabled = true; });
@@ -140,7 +241,12 @@ class AISafetyGame {
         document.getElementById('lobby-copy-btn').onclick = () => this.copyRoomLink();
         document.getElementById('lobby-leaderboard-btn').onclick = () => this.showLeaderboard();
         document.getElementById('lobby-download-btn').onclick = () => this.downloadRoomResults();
+        this.updateRoundDisplay();
         this.showRoomNameModal();
+    }
+
+    generateRoundSeed(round) {
+        return `${this.baseSeed}-round-${round}`;
     }
 
     showRoomNameModal() {
@@ -209,6 +315,7 @@ class AISafetyGame {
             document.getElementById('guide-modal').style.display = 'none';
         });
         document.getElementById('win-save-btn').addEventListener('click', () => this.closeWinAndSave());
+        document.getElementById('win-next-btn').addEventListener('click', () => this.nextRound());
         document.getElementById('leaderboard-close-btn').addEventListener('click', () => document.getElementById('leaderboard-modal').style.display = 'none');
         document.getElementById('home-btn').addEventListener('click', () => { window.location = window.location.pathname || '/'; });
         const dlBtn = document.getElementById('leaderboard-download-btn');
@@ -221,6 +328,28 @@ class AISafetyGame {
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.concept-tooltip')) {
                 this.tooltipManager.forceHide();
+            }
+        });
+
+        this.setupModalCloseOnBackdrop();
+    }
+
+    setupModalCloseOnBackdrop() {
+        const modalIds = ['room-name-modal', 'win-modal', 'lose-modal', 'dictionary-modal', 'guide-modal', 'leaderboard-modal'];
+        modalIds.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+                const content = modal.querySelector('.modal-content');
+                if (content) {
+                    content.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                    });
+                }
             }
         });
     }
@@ -340,8 +469,12 @@ class AISafetyGame {
         this.currentScore = 0;
         this.updateTimerDisplay(0);
         this.updateScoreDisplay(null);
+        if (this.regime === 'lobby' && this.puzzleSeed === null) {
+            this.puzzleSeed = this.generateRoundSeed(this.currentRound);
+        }
         const seed = this.regime === 'lobby' ? this.puzzleSeed : null;
-        this.currentPuzzle = PuzzleGenerator.generatePuzzle(this.gameMode, seed);
+        const templates = this.customTemplates;
+        this.currentPuzzle = PuzzleGenerator.generatePuzzle(this.gameMode, seed, templates);
         this.selectedConcepts = [];
         this.mistakes = 0;
         this.solvedCategories = 0;
@@ -365,8 +498,21 @@ class AISafetyGame {
         this.createGameBoard();
         this.updateSubmitButton();
         this.startTimer();
+        this.updateRoundDisplay();
 
         this.dogAnimations.updateDogMood('happy');
+    }
+
+    updateRoundDisplay() {
+        const roundEl = document.getElementById('round-display');
+        if (!roundEl) return;
+        if (this.regime === 'lobby' && this.totalRounds) {
+            const total = Number(this.totalRounds) || 1;
+            roundEl.style.display = 'block';
+            roundEl.textContent = `Round ${this.currentRound} of ${total}`;
+        } else {
+            roundEl.style.display = 'none';
+        }
     }
 
     startTimer() {
@@ -735,22 +881,54 @@ class AISafetyGame {
     showWinModal() {
         const statsEl = document.getElementById('win-stats');
         const promptEl = document.getElementById('win-name-prompt');
+        const roundInfoEl = document.getElementById('win-round-info');
+        const saveBtn = document.getElementById('win-save-btn');
+        const nextBtn = document.getElementById('win-next-btn');
         if (statsEl) statsEl.textContent = `Time: ${Math.floor(this.elapsedSeconds / 60)}:${(this.elapsedSeconds % 60).toString().padStart(2, '0')} — Score: ${this.currentScore}`;
         if (promptEl) promptEl.style.display = this.regime === 'lobby' ? 'none' : 'block';
         if (this.regime !== 'lobby') document.getElementById('player-name').value = '';
+
+        const isLobby = this.regime === 'lobby';
+        const total = this.totalRounds ? Number(this.totalRounds) : 1;
+
+        if (isLobby) {
+            // In lobby mode, always show round info and "Next game",
+            // regardless of how many rounds were chosen.
+            if (roundInfoEl) {
+                roundInfoEl.style.display = 'block';
+                roundInfoEl.textContent = `Round ${this.currentRound} of ${total}`;
+            }
+            if (saveBtn) saveBtn.style.display = 'none';
+            if (nextBtn) {
+                nextBtn.style.display = 'inline-block';
+                nextBtn.textContent = 'Next game';
+            }
+        } else {
+            // Solo play: no round info, show save button as before
+            if (roundInfoEl) roundInfoEl.style.display = 'none';
+            if (saveBtn) {
+                saveBtn.style.display = 'inline-block';
+                saveBtn.textContent = 'Save & Play Again';
+            }
+            if (nextBtn) nextBtn.style.display = 'none';
+        }
         document.getElementById('win-modal').style.display = 'flex';
     }
 
     async closeWinAndSave() {
         const nameInput = document.getElementById('player-name');
-        const name = this.regime === 'lobby' ? (this.playerName || 'Anonymous') : ((nameInput && nameInput.value.trim()) || 'Anonymous');
+        const baseName = (nameInput && nameInput.value && nameInput.value.trim()) || 'Anonymous';
+        const name = this.regime === 'lobby' ? (this.playerName || baseName) : baseName;
+        const isMultiRoundFinal = this.regime === 'lobby' && this.totalRounds && this.totalRounds > 1 && this.currentRound >= this.totalRounds;
         try {
             if (this.regime === 'lobby') {
+                const nameWithRound = `${name} (R${this.currentRound})`;
                 await api.submitRoomResult(this.roomId, {
-                    playerName: name,
+                    playerName: nameWithRound,
                     score: this.currentScore,
                     timeSeconds: this.elapsedSeconds,
-                    won: true
+                    won: true,
+                    roundNumber: this.currentRound
                 });
             } else {
                 await api.submitSoloResult({
@@ -769,6 +947,30 @@ class AISafetyGame {
         document.getElementById('win-modal').style.display = 'none';
         document.getElementById('win-name-prompt').style.display = 'none';
         this.startNewGame();
+    }
+
+    async nextRound() {
+        const name = this.playerName || 'Anonymous';
+        const nameWithRound = `${name} (R${this.currentRound})`;
+        try {
+            await api.submitRoomResult(this.roomId, {
+                playerName: nameWithRound,
+                score: this.currentScore,
+                timeSeconds: this.elapsedSeconds,
+                won: true,
+                roundNumber: this.currentRound
+            });
+        } catch (e) {
+            console.error('Failed to submit round result:', e);
+        }
+        if (this.currentRound < this.totalRounds) {
+            this.currentRound++;
+            localStorage.setItem(`room_round_${this.roomId}`, this.currentRound.toString());
+            this.puzzleSeed = this.generateRoundSeed(this.currentRound);
+            document.getElementById('win-modal').style.display = 'none';
+            this.updateRoundDisplay();
+            this.startNewGame();
+        }
     }
 
     async getLeaderboard() {
@@ -815,11 +1017,14 @@ class AISafetyGame {
     saveResult(won) {
         const submit = () => {
             if (this.regime === 'lobby' && this.roomId) {
+                const baseName = this.playerName || 'Anonymous';
+                const nameWithRound = `${baseName} (R${this.currentRound})`;
                 api.submitRoomResult(this.roomId, {
-                    playerName: this.playerName || 'Anonymous',
+                    playerName: nameWithRound,
                     score: this.currentScore,
                     timeSeconds: this.elapsedSeconds,
-                    won: false
+                    won: false,
+                    roundNumber: this.currentRound
                 }).catch(() => {});
             } else if (this.regime === 'solo') {
                 api.submitSoloResult({
@@ -869,6 +1074,8 @@ class AISafetyGame {
                 const name = entry.playerName != null ? entry.playerName : entry.name;
                 const timeStr = `${Math.floor(time / 60)}:${(time % 60).toString().padStart(2, '0')}`;
                 const wonStr = entry.won !== undefined ? (entry.won ? ' ✓' : '') : '';
+                // For lobby we already bake round into the name (e.g. "Alice (R2)")
+                // For solo we don't have rounds, so just show the name.
                 div.innerHTML = `<span><strong>#${i + 1}</strong> ${name}</span><span>${entry.score} pts · ${timeStr}${wonStr}</span>`;
                 container.appendChild(div);
             });

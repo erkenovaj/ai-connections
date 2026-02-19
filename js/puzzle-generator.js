@@ -20,9 +20,11 @@ class PuzzleGenerator {
     /**
      * @param {'normal'|'advanced'} mode - 'normal' = 4 categories (16 tiles), 'advanced' = 3 categories (12 + 4 decoys)
      * @param {string|null} seed - If provided, same seed produces same puzzle (for multiplayer rooms).
+     * @param {Array|null} customTemplates - Optional custom category templates array. If null, uses default CATEGORY_TEMPLATES.
      */
-    static generatePuzzle(mode = 'normal', seed = null) {
-        if (!Array.isArray(CATEGORY_TEMPLATES) || CATEGORY_TEMPLATES.length === 0) {
+    static generatePuzzle(mode = 'normal', seed = null, customTemplates = null) {
+        const templates = customTemplates || CATEGORY_TEMPLATES;
+        if (!Array.isArray(templates) || templates.length === 0) {
             throw new Error('Cannot generate puzzle: category templates not loaded. Check that category-templates.json is deployed (e.g. on GitHub Pages).');
         }
         const rand = seed ? seededRandom(seed) : () => Math.random();
@@ -31,7 +33,7 @@ class PuzzleGenerator {
             ? CONFIG.TOTAL_CATEGORIES_NORMAL
             : CONFIG.TOTAL_CATEGORIES_ADVANCED;
 
-        const shuffledCategories = [...CATEGORY_TEMPLATES].sort(() => rand() - 0.5);
+        const shuffledCategories = [...templates].sort(() => rand() - 0.5);
         const selectedCategories = shuffledCategories.slice(0, numCategories);
 
         const allPuzzleConcepts = new Set();
