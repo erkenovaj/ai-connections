@@ -46,22 +46,23 @@ Your canine companion shows different emotions:
 - 🎉 **Celebrating** - When you solve puzzles
 - 😴 **Sleeping** - When the game ends
 
-### 🖥️ Running with the Node server (Solo + Lobby + online leaderboard)
+### 🖥️ Running locally (Solo + Lobby + online leaderboard)
 
-For **solo scores saved online** and **lobby (multiplayer) rooms**, run the integrated Node + SQLite backend:
+The app uses **Vercel serverless API** and **Turso** for the database. To run locally:
 
 ```bash
 # 1. Install dependencies
 npm install
 
-# 2. Start the server
+# 2. Add Turso env vars to .env.local (see .env.example)
+# 3. Start local dev
 npm start
 ```
 
-Then open **http://localhost:3000** in your browser.
+Then open the URL shown (e.g. **http://localhost:3000**) in your browser.
 
 You’ll see a welcome screen where you can:
-- **Solo Play** – single‑player games, scores stored in the SQLite database
+- **Solo Play** – single‑player games, scores stored in Turso
 - **Create Room** – create a lobby with:
   - Normal or Advanced mode
   - Optional custom category templates (JSON)
@@ -69,7 +70,6 @@ You’ll see a welcome screen where you can:
 
 Everyone who joins the room via the link gets the **same sequence of puzzles**; each player progresses at their own pace. The room leaderboard shows per‑round results and can be downloaded as CSV.
 
-The SQLite database file is created in the `data/` folder (auto‑created on first run).
 
 ### ☁️ Deploying to Vercel + Turso
 
@@ -80,13 +80,13 @@ For **serverless** hosting with no server to manage, use **Vercel** for the app 
 3. **Deploy to Vercel**: Connect this repo in the [Vercel dashboard](https://vercel.com); set **Environment Variables**:
    - `TURSO_DATABASE_URL` = your Turso URL
    - `TURSO_AUTH_TOKEN` = your Turso token
-4. **Install and deploy**: Vercel will run `npm install` and deploy. The `api/` folder provides the serverless endpoints; the frontend uses the same API paths, so no frontend changes are needed.
+4. **Install and deploy**: Vercel will run `npm install` and deploy. The `api/` folder provides the serverless endpoints; the frontend uses the same API paths.
 
-Local dev with SQLite still works: run `npm start` for the Express server. For local testing of the Vercel + Turso stack, use `vercel dev` and a `.env.local` with the same Turso variables (see `.env.example`).
+For local testing, run `npm start` (or `vercel dev`) with a `.env.local` containing `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` (see `.env.example`).
 
 ### 🌐 Deploying to GitHub Pages
 
-GitHub Pages serves the app as **static files only**. Lobby (rooms) and online leaderboard require the Node server (run it on your machine or host the backend elsewhere).
+GitHub Pages serves the app as **static files only**. Lobby (rooms) and online leaderboard require the API backend (e.g. deploy to Vercel with Turso, or run `vercel dev` locally).
 
 **Option A – Deploy from a branch (simplest)**  
 1. Push this repo to GitHub (include `js/category-templates.json` so puzzles load correctly).  
