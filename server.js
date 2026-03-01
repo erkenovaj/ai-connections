@@ -9,6 +9,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// On Vercel we use serverless api/ + Turso; do not run SQLite or create data/
+if (process.env.VERCEL) {
+  // No-op: Vercel serves static files and api/* routes only
+} else {
 // SQLite database (create data/ if needed)
 const dataDir = path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
@@ -148,3 +152,4 @@ app.get('/api/solo/leaderboard', (req, res) => {
 app.listen(PORT, () => {
   console.log(`AI Safety Connections server at http://localhost:${PORT}`);
 });
+}
