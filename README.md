@@ -77,7 +77,7 @@ For **serverless** hosting with no server to manage, use **Vercel** for the app 
 
 1. **Create a Turso database** at [turso.tech](https://turso.tech) (or with CLI: `turso db create ai-connections`).
 2. **Get URL and token**: `turso db show ai-connections --url` and `turso db tokens create ai-connections`.
-3. **Deploy to Vercel**: Connect this repo in the [Vercel dashboard](https://vercel.com); set **Environment Variables**: 
+3. **Deploy to Vercel**: Connect this repo in the [Vercel dashboard](https://vercel.com); set **Environment Variables**:
    - `TURSO_DATABASE_URL` = your Turso URL
    - `TURSO_AUTH_TOKEN` = your Turso token
 4. **Install and deploy**: Vercel will run `npm install` and deploy. The `api/` folder provides the serverless endpoints; the frontend uses the same API paths.
