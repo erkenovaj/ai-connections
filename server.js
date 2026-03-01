@@ -10,12 +10,17 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // On Vercel we use serverless api/ + Turso; do not run SQLite or create data/
-if (process.env.VERCEL) {
-  // No-op: Vercel serves static files and api/* routes only
-} else {
-// SQLite database (create data/ if needed)
-const dataDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+// Also skip if we can't create data/ (read-only fs, e.g. Vercel without VERCEL env)
+const isVercel = process.env.VERCEL === '1' || process.env.VERCEL === true;
+let dataDir;
+try {
+  dataDir = path.join(__dirname, 'data');
+  if (!isVercel && !fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+} catch (e) {
+  dataDir = null; // read-only filesystem
+}
+if (!isVercel && dataDir) {
+// SQLite database
 const dbPath = path.join(dataDir, 'game.db');
 const db = new Database(dbPath);
 
