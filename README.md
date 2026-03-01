@@ -71,6 +71,19 @@ Everyone who joins the room via the link gets the **same sequence of puzzles**; 
 
 The SQLite database file is created in the `data/` folder (auto‑created on first run).
 
+### ☁️ Deploying to Vercel + Turso
+
+For **serverless** hosting with no server to manage, use **Vercel** for the app and **Turso** for the database:
+
+1. **Create a Turso database** at [turso.tech](https://turso.tech) (or with CLI: `turso db create ai-connections`).
+2. **Get URL and token**: `turso db show ai-connections --url` and `turso db tokens create ai-connections`.
+3. **Deploy to Vercel**: Connect this repo in the [Vercel dashboard](https://vercel.com); set **Environment Variables**:
+   - `TURSO_DATABASE_URL` = your Turso URL
+   - `TURSO_AUTH_TOKEN` = your Turso token
+4. **Install and deploy**: Vercel will run `npm install` and deploy. The `api/` folder provides the serverless endpoints; the frontend uses the same API paths, so no frontend changes are needed.
+
+Local dev with SQLite still works: run `npm start` for the Express server. For local testing of the Vercel + Turso stack, use `vercel dev` and a `.env.local` with the same Turso variables (see `.env.example`).
+
 ### 🌐 Deploying to GitHub Pages
 
 GitHub Pages serves the app as **static files only**. Lobby (rooms) and online leaderboard require the Node server (run it on your machine or host the backend elsewhere).
