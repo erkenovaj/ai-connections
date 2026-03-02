@@ -48,7 +48,7 @@ Your canine companion shows different emotions:
 ### 🌐 Deploying to GitHub Pages
 
 **Option A – Deploy from a branch (simplest)**  
-1. Push this repo to GitHub (include `js/category-templates.json` so puzzles load correctly).  
+1. Push this repo to GitHub (include `configs/category-templates.json` so puzzles load correctly).  
 2. Open **Settings → Pages**.  
 3. Under **Source**, choose **Deploy from a branch**.  
 4. Branch: **main** (or **master**), Folder: **/ (root)**.  
@@ -100,7 +100,8 @@ ai-safety-connections/
 │   ├── tooltip.js      # Concept hover tooltips
 │   ├── dog-animations.js   # Dog behavior and animations
 │   ├── sounds.js       # Web Audio sound effects
-│   ├── config.js       # Game configuration and data
+│   └── config.js       # Game configuration and data
+├── configs/
 │   └── category-templates.json # Category definitions
 ├── images/
 │   ├── favicon.svg     # Site icon

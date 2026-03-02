@@ -1,4 +1,5 @@
 import PuzzleGenerator from './puzzle-generator.js';
+import { trySampleWithPython } from './python-sampler-bridge.js';
 import TooltipManager from './tooltip.js';
 import DogAnimations from './dog-animations.js';
 import Sounds from './sounds.js';
@@ -145,7 +146,7 @@ class AISafetyGame {
         this.currentScore = 0;
         this.updateTimerDisplay(0);
         this.updateScoreDisplay(null);
-        this.currentPuzzle = PuzzleGenerator.generatePuzzle(this.gameMode);
+        this.currentPuzzle = null;
         this.selectedConcepts = [];
         this.mistakes = 0;
         this.solvedCategories = 0;
@@ -153,12 +154,31 @@ class AISafetyGame {
 
         this.updateCategorySlotsVisibility();
         this.updateMistakesDisplay();
-        this.createGameBoard();
         this.resetCategorySlots();
         this.updateSubmitButton();
         this.startTimer();
 
         this.dogAnimations.updateDogMood('happy');
+        this.loadPuzzle();
+    }
+
+    async loadPuzzle() {
+        // Try Python sampler first (Version 1 for now).
+        try {
+            const response = await fetch('./configs/category-templates.json');
+            const templates = await response.json();
+            const pythonPuzzle = await trySampleWithPython('1', templates);
+            if (pythonPuzzle && pythonPuzzle.board && pythonPuzzle.categories) {
+                this.currentPuzzle = pythonPuzzle;
+            } else {
+                // Fallback to existing JS generator.
+                this.currentPuzzle = PuzzleGenerator.generatePuzzle(this.gameMode);
+            }
+        } catch {
+            this.currentPuzzle = PuzzleGenerator.generatePuzzle(this.gameMode);
+        }
+
+        this.createGameBoard();
     }
 
     startTimer() {
