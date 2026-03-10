@@ -314,8 +314,13 @@ class AISafetyGame {
                             throw new Error('Invalid format');
                         }
                     });
-                    this.customTemplates = json;
-                    document.getElementById('solo-templates-name').textContent = 'Pasted JSON';
+                this.customTemplates = json;
+                // Replace concept definitions with those from the pasted JSON
+                Object.keys(CONCEPT_DEFINITIONS).forEach(k => delete CONCEPT_DEFINITIONS[k]);
+                json.forEach(entry => {
+                    CONCEPT_DEFINITIONS[entry.name] = entry.description;
+                });
+                document.getElementById('solo-templates-name').textContent = 'Pasted JSON';
                 } catch (err) {
                     alert('Invalid JSON. Expected an array of entries like { "name": "Term", "description": "...", "tags": ["Category name"] }.');
                 }
@@ -338,6 +343,10 @@ class AISafetyGame {
                 });
                 // Accept: flat list of { name, description, tags: [...] }
                 this.customTemplates = json;
+                Object.keys(CONCEPT_DEFINITIONS).forEach(k => delete CONCEPT_DEFINITIONS[k]);
+                json.forEach(entry => {
+                    CONCEPT_DEFINITIONS[entry.name] = entry.description;
+                });
                 document.getElementById('solo-templates-name').textContent = file.name;
             } catch (err) {
                 alert('Invalid JSON file. Expected an array of entries like { \"name\": \"Term\", \"description\": \"...\", \"tags\": [\"Category name\"] }.');
