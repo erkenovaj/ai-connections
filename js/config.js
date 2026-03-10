@@ -58,7 +58,7 @@ let CATEGORY_TEMPLATES = [];
 // Load category templates from JSON file (use import.meta.url so path resolves from module location)
 async function loadCategoryTemplates() {
     try {
-        const url = new URL('./category-templates.json', import.meta.url).href;
+        const url = new URL('../configs/category-templates.json', import.meta.url).href;
         const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`Failed to load category templates: ${response.statusText}`);

@@ -13,19 +13,19 @@ const LANG_STORAGE_KEY = 'ai_connections_lang';
 const UI_STRINGS = {
     headerTitle: {
         en: 'AI Safety Connections',
-        ru: 'Связи в безопасности ИИ'
+        ru: 'AI Safety Connections'
     },
     headerDescNormal: {
-        en: 'Create four groups of four that share a common theme. Many concepts fit multiple categories. The dog is watching...',
-        ru: 'Создайте четыре группы по четыре термина с общей темой. Многие понятия подходят к нескольким категориям. Пёс наблюдает...'
+        en: 'Create four groups of four that share a common theme. The dog is watching...',
+        ru: 'Соберите четыре группы по четыре термина с общей темой. Пёсик наблюдает...'
     },
     headerDescAdvanced: {
         en: 'Create three groups of four that share a common theme. Four decoys included. The dog is watching...',
-        ru: 'Создайте три группы по четыре термина с общей темой. Добавлены четыре «обманки». Пёс наблюдает...'
+        ru: 'Соберите три группы по четыре термина с общей темой. Добавлены четыре «обманки». Пёсик наблюдает...'
     },
     welcomeTitle: {
         en: 'AI Safety Connections',
-        ru: 'Связи в безопасности ИИ'
+        ru: 'AI Safety Connections'
     },
     welcomeDesc: {
         en: 'Create groups of four that share a common theme. Choose how you want to play:',
