@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="css/animations.css?v=2">
 </head>
 <body>
+    <!-- Global language toggle (visible on all screens) -->
+    <button type="button" id="lang-toggle" class="lang-toggle">EN / RU</button>
     <!-- Welcome: choose Solo or Lobby -->
     <div class="welcome-screen" id="welcome-screen">
         <div class="welcome-card">
@@ -20,6 +22,7 @@
                     <div class="welcome-option-group">
                         <label>Mode:</label>
                         <div class="welcome-mode-toggle">
+                            <button type="button" class="welcome-mode-btn" data-mode="easy" data-regime="solo">Easy (4 categories)</button>
                             <button type="button" class="welcome-mode-btn active" data-mode="normal" data-regime="solo">Normal (4 categories)</button>
                             <button type="button" class="welcome-mode-btn" data-mode="advanced" data-regime="solo">Advanced (3 categories)</button>
                         </div>
@@ -37,6 +40,7 @@
                     <div class="welcome-option-group">
                         <label>Mode:</label>
                         <div class="welcome-mode-toggle">
+                            <button type="button" class="welcome-mode-btn" data-mode="easy" data-regime="lobby">Easy (4 categories)</button>
                             <button type="button" class="welcome-mode-btn active" data-mode="normal" data-regime="lobby">Normal (4 categories)</button>
                             <button type="button" class="welcome-mode-btn" data-mode="advanced" data-regime="lobby">Advanced (3 categories)</button>
                         </div>
@@ -79,6 +83,7 @@
             <button type="button" class="home-btn" id="home-btn">Back to home</button>
             <p class="header-desc">Create four groups of four that share a common theme. Many concepts fit multiple categories. The dog is watching...</p>
             <div class="mode-toggle">
+                <button class="mode-btn" data-mode="easy">Easy (4 categories)</button>
                 <button class="mode-btn active" data-mode="normal">Normal (4 categories)</button>
                 <button class="mode-btn" data-mode="advanced">Advanced (3 categories)</button>
             </div>

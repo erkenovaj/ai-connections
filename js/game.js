@@ -8,6 +8,86 @@ import * as api from './api.js';
 const LEADERBOARD_KEY = 'ai_connections_leaderboard';
 const GUIDE_SEEN_KEY = 'ai_connections_guide_seen';
 const MAX_LEADERBOARD_ENTRIES = 20;
+const LANG_STORAGE_KEY = 'ai_connections_lang';
+
+const UI_STRINGS = {
+    headerTitle: {
+        en: 'AI Safety Connections',
+        ru: 'Связи в безопасности ИИ'
+    },
+    headerDescNormal: {
+        en: 'Create four groups of four that share a common theme. Many concepts fit multiple categories. The dog is watching...',
+        ru: 'Создайте четыре группы по четыре термина с общей темой. Многие понятия подходят к нескольким категориям. Пёс наблюдает...'
+    },
+    headerDescAdvanced: {
+        en: 'Create three groups of four that share a common theme. Four decoys included. The dog is watching...',
+        ru: 'Создайте три группы по четыре термина с общей темой. Добавлены четыре «обманки». Пёс наблюдает...'
+    },
+    welcomeTitle: {
+        en: 'AI Safety Connections',
+        ru: 'Связи в безопасности ИИ'
+    },
+    welcomeDesc: {
+        en: 'Create groups of four that share a common theme. Choose how you want to play:',
+        ru: 'Соберите группы по четыре термина с общей темой. Выберите, как вы хотите играть:'
+    },
+    soloHeading: {
+        en: 'Solo Play',
+        ru: 'Одиночная игра'
+    },
+    lobbyHeading: {
+        en: 'Create Room (multiplayer)',
+        ru: 'Создать комнату (мультиплеер)'
+    },
+    modeLabel: {
+        en: 'Mode:',
+        ru: 'Режим:'
+    },
+    modeEasy: {
+        en: 'Easy (4 categories)',
+        ru: 'Лёгкий (4 категории)'
+    },
+    modeNormal: {
+        en: 'Normal (4 categories)',
+        ru: 'Обычный (4 категории)'
+    },
+    modeAdvanced: {
+        en: 'Advanced (3 categories)',
+        ru: 'Продвинутый (3 категории)'
+    },
+    startSolo: {
+        en: 'Start Solo Game',
+        ru: 'Начать одиночную игру'
+    },
+    createRoom: {
+        en: 'Create Room',
+        ru: 'Создать комнату'
+    },
+    backHome: {
+        en: 'Back to home',
+        ru: 'На главный экран'
+    },
+    defsOn: {
+        en: '📖 DEFS: ON',
+        ru: '📖 ОПРЕД: ВКЛ'
+    },
+    defsOff: {
+        en: '🚫 DEFS: OFF',
+        ru: '🚫 ОПРЕД: ВЫКЛ'
+    },
+    submit: {
+        en: 'Submit',
+        ru: 'Проверить'
+    },
+    deselectAll: {
+        en: 'Deselect All',
+        ru: 'Снять выделение'
+    },
+    newGame: {
+        en: 'New Game',
+        ru: 'Новая игра'
+    }
+};
 
 function parseUrlConfig() {
     const params = new URLSearchParams(window.location.search);
@@ -51,6 +131,7 @@ class AISafetyGame {
         this.customTemplates = null;
         this.currentRound = 1;
         this.totalRounds = 1;
+        this.language = localStorage.getItem(LANG_STORAGE_KEY) || 'en';
         this.init();
     }
 
@@ -58,6 +139,7 @@ class AISafetyGame {
         const urlConfig = parseUrlConfig();
         if (urlConfig.mode !== null) this.gameMode = urlConfig.mode;
         this.bindEvents();
+        this.applyLanguage();
         this.updateHintsToggle();
         this.updateHintButton();
         this.updateModeToggle();
@@ -236,7 +318,8 @@ class AISafetyGame {
         document.querySelector('.header').classList.add('has-lobby-bar');
         const linkEl = document.getElementById('lobby-link');
         if (linkEl) linkEl.value = this.joinLink;
-        document.querySelectorAll('.mode-btn').forEach(btn => { btn.disabled = true; });
+        const modeToggle = document.querySelector('.mode-toggle');
+        if (modeToggle) modeToggle.style.display = 'none';
         document.querySelector('.leaderboard-btn').style.display = 'none';
         document.getElementById('lobby-copy-btn').onclick = () => this.copyRoomLink();
         document.getElementById('lobby-leaderboard-btn').onclick = () => this.showLeaderboard();
@@ -321,6 +404,11 @@ class AISafetyGame {
         const dlBtn = document.getElementById('leaderboard-download-btn');
         if (dlBtn) dlBtn.addEventListener('click', () => this.downloadRoomResults());
 
+        const langToggle = document.getElementById('lang-toggle');
+        if (langToggle) {
+            langToggle.addEventListener('click', () => this.toggleLanguage());
+        }
+
         document.querySelectorAll('.mode-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.setGameMode(e.target.dataset.mode));
         });
@@ -362,6 +450,10 @@ class AISafetyGame {
         this.startNewGame();
     }
 
+    getEffectiveMode() {
+        return this.gameMode === 'advanced' ? 'advanced' : 'normal';
+    }
+
     updateModeToggle() {
         document.querySelectorAll('.mode-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.mode === this.gameMode);
@@ -371,19 +463,21 @@ class AISafetyGame {
 
     updateHeaderDesc() {
         const p = document.querySelector('.header-desc');
-        if (this.gameMode === 'normal') {
-            p.textContent = 'Create four groups of four that share a common theme. Many concepts fit multiple categories. The dog is watching...';
+        if (!p) return;
+        if (this.getEffectiveMode() === 'normal') {
+            p.textContent = UI_STRINGS.headerDescNormal[this.language];
         } else {
-            p.textContent = 'Create three groups of four that share a common theme. Four decoys included. The dog is watching...';
+            p.textContent = UI_STRINGS.headerDescAdvanced[this.language];
         }
     }
 
     updateCategorySlotsVisibility() {
         const fourth = document.querySelector('.category-slot-4th');
-        if (fourth) fourth.classList.toggle('hidden', this.gameMode === 'advanced');
+        if (fourth) fourth.classList.toggle('hidden', this.getEffectiveMode() === 'advanced');
         const slots = document.getElementById('category-slots');
-        slots.classList.toggle('slots-4', this.gameMode === 'normal');
-        slots.classList.toggle('slots-3', this.gameMode === 'advanced');
+        const effective = this.getEffectiveMode();
+        slots.classList.toggle('slots-4', effective === 'normal');
+        slots.classList.toggle('slots-3', effective === 'advanced');
     }
 
     toggleHints() {
@@ -405,11 +499,11 @@ class AISafetyGame {
         if (this.hintsEnabled) {
             hintsBtn.classList.add('on');
             hintsBtn.classList.remove('off');
-            hintsBtn.innerHTML = '📖 DEFS: ON';
+            hintsBtn.innerHTML = UI_STRINGS.defsOn[this.language];
         } else {
             hintsBtn.classList.add('off');
             hintsBtn.classList.remove('on');
-            hintsBtn.innerHTML = '🚫 DEFS: OFF';
+            hintsBtn.innerHTML = UI_STRINGS.defsOff[this.language];
         }
     }
 
@@ -474,7 +568,7 @@ class AISafetyGame {
         }
         const seed = this.regime === 'lobby' ? this.puzzleSeed : null;
         const templates = this.customTemplates;
-        this.currentPuzzle = PuzzleGenerator.generatePuzzle(this.gameMode, seed, templates);
+        this.currentPuzzle = PuzzleGenerator.generatePuzzle(this.getEffectiveMode(), seed, templates);
         this.selectedConcepts = [];
         this.mistakes = 0;
         this.solvedCategories = 0;
@@ -1132,6 +1226,79 @@ class AISafetyGame {
             slot.querySelector('.category-name').textContent = `Category ${index + 1}`;
             slot.querySelector('.category-concepts').textContent = '';
         });
+    }
+
+    applyLanguage() {
+        const lang = this.language === 'ru' ? 'ru' : 'en';
+        this.language = lang;
+        document.documentElement.lang = lang;
+
+        const langToggle = document.getElementById('lang-toggle');
+        if (langToggle) {
+            langToggle.textContent = lang === 'ru' ? 'RU / EN' : 'EN / RU';
+        }
+
+        const headerTitle = document.querySelector('.header h1');
+        if (headerTitle) headerTitle.textContent = UI_STRINGS.headerTitle[lang];
+
+        const welcomeTitle = document.querySelector('.welcome-card h1');
+        if (welcomeTitle) welcomeTitle.textContent = UI_STRINGS.welcomeTitle[lang];
+
+        const welcomeDesc = document.querySelector('.welcome-desc');
+        if (welcomeDesc) welcomeDesc.textContent = UI_STRINGS.welcomeDesc[lang];
+
+        const soloHeading = document.querySelector('.welcome-solo-section h3');
+        if (soloHeading) soloHeading.textContent = UI_STRINGS.soloHeading[lang];
+
+        const lobbyHeading = document.querySelector('.welcome-lobby-section h3');
+        if (lobbyHeading) lobbyHeading.textContent = UI_STRINGS.lobbyHeading[lang];
+
+        document.querySelectorAll('.welcome-option-group label').forEach(label => {
+            if (label.textContent.trim().startsWith('Mode')) {
+                label.textContent = UI_STRINGS.modeLabel[lang];
+            }
+        });
+
+        document.querySelectorAll('.welcome-mode-btn').forEach(btn => {
+            const mode = btn.dataset.mode;
+            if (mode === 'easy') btn.textContent = UI_STRINGS.modeEasy[lang];
+            if (mode === 'normal') btn.textContent = UI_STRINGS.modeNormal[lang];
+            if (mode === 'advanced') btn.textContent = UI_STRINGS.modeAdvanced[lang];
+        });
+
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            const mode = btn.dataset.mode;
+            if (mode === 'easy') btn.textContent = UI_STRINGS.modeEasy[lang];
+            if (mode === 'normal') btn.textContent = UI_STRINGS.modeNormal[lang];
+            if (mode === 'advanced') btn.textContent = UI_STRINGS.modeAdvanced[lang];
+        });
+
+        const soloBtn = document.getElementById('welcome-solo');
+        if (soloBtn) soloBtn.textContent = UI_STRINGS.startSolo[lang];
+
+        const lobbyCreateBtn = document.getElementById('welcome-lobby-create');
+        if (lobbyCreateBtn) lobbyCreateBtn.textContent = UI_STRINGS.createRoom[lang];
+
+        const homeBtn = document.getElementById('home-btn');
+        if (homeBtn) homeBtn.textContent = UI_STRINGS.backHome[lang];
+
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.textContent = UI_STRINGS.submit[lang];
+
+        const deselectBtn = document.getElementById('deselect-btn');
+        if (deselectBtn) deselectBtn.textContent = UI_STRINGS.deselectAll[lang];
+
+        const newGameBtn = document.getElementById('new-game-btn');
+        if (newGameBtn) newGameBtn.textContent = UI_STRINGS.newGame[lang];
+
+        this.updateHeaderDesc();
+        this.updateHintsToggle();
+        localStorage.setItem(LANG_STORAGE_KEY, lang);
+    }
+
+    toggleLanguage() {
+        this.language = this.language === 'en' ? 'ru' : 'en';
+        this.applyLanguage();
     }
 }
 
