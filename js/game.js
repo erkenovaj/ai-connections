@@ -31,13 +31,13 @@ const UI_STRINGS = {
         en: 'Create groups of four that share a common theme. Choose how you want to play:',
         ru: 'Соберите группы по четыре термина с общей темой. Выберите, как вы хотите играть:'
     },
-    soloHeading: {
-        en: 'Solo Play',
+    soloPanelTitle: {
+        en: 'Solo game',
         ru: 'Одиночная игра'
     },
-    lobbyHeading: {
-        en: 'Multiplayer (create a room)',
-        ru: 'Мультиплеер (создать комнату)'
+    roomPanelTitle: {
+        en: 'Room (multiplayer)',
+        ru: 'Комната (мультиплеер)'
     },
     modeLabel: {
         en: 'Mode:',
@@ -56,16 +56,40 @@ const UI_STRINGS = {
         ru: 'Продвинутый (3 категории)'
     },
     startSolo: {
-        en: 'Start Solo Game',
+        en: 'Start solo game',
         ru: 'Начать одиночную игру'
     },
     createRoom: {
-        en: 'Start multiplayer game',
-        ru: 'Начать игру в мультиплеер'
+        en: 'Create room',
+        ru: 'Создать комнату'
     },
     backHome: {
         en: 'Back to home',
         ru: 'На главный экран'
+    },
+    joinLabel: {
+        en: 'Already have a room link?',
+        ru: 'Уже есть ссылка на комнату?'
+    },
+    joinButton: {
+        en: 'Join',
+        ru: 'Присоединиться'
+    },
+    joinHint: {
+        en: 'Solo: play on your own, scores saved online. Room: same puzzle for everyone, shared leaderboard.',
+        ru: 'Соло: играете в одиночку, результаты сохраняются онлайн. Комната: одна и та же головоломка для всех и общий рейтинг.'
+    },
+    templatesLabel: {
+        en: 'Category templates (optional):',
+        ru: 'Категории (необязательно, из JSON):'
+    },
+    templatesApply: {
+        en: 'Use pasted JSON',
+        ru: 'Использовать JSON из поля'
+    },
+    linkPlaceholder: {
+        en: 'https://...?room=abc12345',
+        ru: 'https://...?room=abc12345'
     },
     defsOn: {
         en: '📖 DEFS: ON',
@@ -86,6 +110,90 @@ const UI_STRINGS = {
     newGame: {
         en: 'New Game',
         ru: 'Новая игра'
+    },
+    dictionaryButton: {
+        en: 'Dictionary',
+        ru: 'Словарь'
+    },
+    guideButton: {
+        en: 'Guide',
+        ru: 'Правила'
+    },
+    leaderboardButton: {
+        en: 'Leaderboard',
+        ru: 'Таблица лидеров'
+    },
+    winTitle: {
+        en: '🎉 Puzzle Complete!',
+        ru: '🎉 Головоломка решена!'
+    },
+    winDogLine: {
+        en: "You've successfully grouped all the AI safety concepts! The dog is very proud! 🐕",
+        ru: 'Вы успешно собрали все группы по безопасности ИИ! Пёс вами очень гордится! 🐕'
+    },
+    winNameLabel: {
+        en: 'Name for leaderboard (optional):',
+        ru: 'Имя для таблицы лидеров (необязательно):'
+    },
+    winSave: {
+        en: 'Save & Play Again',
+        ru: 'Сохранить и сыграть ещё раз'
+    },
+    winNext: {
+        en: 'Next game',
+        ru: 'Следующая игра'
+    },
+    loseTitle: {
+        en: 'Game Over',
+        ru: 'Игра окончена'
+    },
+    loseButton: {
+        en: 'Try Again',
+        ru: 'Попробовать ещё раз'
+    },
+    roomJoinTitle: {
+        en: 'Join room',
+        ru: 'Вход в комнату'
+    },
+    roomJoinText: {
+        en: 'Enter your name to appear on the room leaderboard:',
+        ru: 'Введите имя, которое будет показано в таблице лидеров комнаты:'
+    },
+    roomJoinLabel: {
+        en: 'Your name',
+        ru: 'Ваше имя'
+    },
+    roomJoinStart: {
+        en: 'Start',
+        ru: 'Начать'
+    },
+    dictionaryTitle: {
+        en: 'AI Safety Dictionary',
+        ru: 'Словарь по безопасности ИИ'
+    },
+    dictionaryIntro: {
+        en: 'Definitions of all concepts in the game:',
+        ru: 'Определения всех понятий, которые встречаются в игре:'
+    },
+    dictionaryClose: {
+        en: 'Close',
+        ru: 'Закрыть'
+    },
+    guideTitle: {
+        en: 'How to Play AI Safety Connections',
+        ru: 'Как играть в AI Safety Connections'
+    },
+    guideStart: {
+        en: 'Start Playing',
+        ru: 'Начать игру'
+    },
+    leaderboardTitle: {
+        en: '🏆 Leaderboard',
+        ru: '🏆 Таблица лидеров'
+    },
+    leaderboardClose: {
+        en: 'Close',
+        ru: 'Закрыть'
     }
 };
 
@@ -1297,15 +1405,19 @@ class AISafetyGame {
         const welcomeDesc = document.querySelector('.welcome-desc');
         if (welcomeDesc) welcomeDesc.textContent = UI_STRINGS.welcomeDesc[lang];
 
-        const soloHeading = document.querySelector('.welcome-solo-section h3');
-        if (soloHeading) soloHeading.textContent = UI_STRINGS.soloHeading[lang];
+        const soloPanelTitle = document.querySelector('.solo-panel .welcome-panel-title');
+        if (soloPanelTitle) soloPanelTitle.textContent = UI_STRINGS.soloPanelTitle[lang];
 
-        const lobbyHeading = document.querySelector('.welcome-lobby-section h3');
-        if (lobbyHeading) lobbyHeading.textContent = UI_STRINGS.lobbyHeading[lang];
+        const roomPanelTitle = document.querySelector('.room-panel .welcome-panel-title');
+        if (roomPanelTitle) roomPanelTitle.textContent = UI_STRINGS.roomPanelTitle[lang];
 
         document.querySelectorAll('.welcome-option-group label').forEach(label => {
-            if (label.textContent.trim().startsWith('Mode')) {
+            const txt = label.textContent.trim();
+            if (txt.startsWith('Mode') || txt.startsWith('Режим')) {
                 label.textContent = UI_STRINGS.modeLabel[lang];
+            }
+            if (txt.startsWith('Category templates')) {
+                label.textContent = UI_STRINGS.templatesLabel[lang];
             }
         });
 
@@ -1340,6 +1452,78 @@ class AISafetyGame {
 
         const newGameBtn = document.getElementById('new-game-btn');
         if (newGameBtn) newGameBtn.textContent = UI_STRINGS.newGame[lang];
+
+        const dictBtn = document.querySelector('.dictionary-btn');
+        if (dictBtn) dictBtn.textContent = UI_STRINGS.dictionaryButton[lang];
+
+        const guideBtn = document.querySelector('.guide-btn');
+        if (guideBtn) guideBtn.textContent = UI_STRINGS.guideButton[lang];
+
+        const lbBtn = document.querySelector('.leaderboard-btn');
+        if (lbBtn) lbBtn.textContent = UI_STRINGS.leaderboardButton[lang];
+
+        const joinLabel = document.querySelector('.welcome-join label');
+        if (joinLabel) joinLabel.textContent = UI_STRINGS.joinLabel[lang];
+
+        const joinBtn = document.getElementById('welcome-join-btn');
+        if (joinBtn) joinBtn.textContent = UI_STRINGS.joinButton[lang];
+
+        const joinHint = document.querySelector('.welcome-join .welcome-hint');
+        if (joinHint) joinHint.textContent = UI_STRINGS.joinHint[lang];
+
+        const linkInput = document.getElementById('welcome-room-link');
+        if (linkInput) linkInput.placeholder = UI_STRINGS.linkPlaceholder[lang];
+
+        const templatesApplyBtn = document.getElementById('templates-apply-btn');
+        if (templatesApplyBtn) templatesApplyBtn.textContent = UI_STRINGS.templatesApply[lang];
+
+        // Win modal
+        const winTitle = document.querySelector('#win-modal h2');
+        if (winTitle) winTitle.textContent = UI_STRINGS.winTitle[lang];
+        const winDogLine = document.querySelector('#win-modal p:nth-of-type(2)');
+        if (winDogLine) winDogLine.textContent = UI_STRINGS.winDogLine[lang];
+        const winNameLabel = document.querySelector('#win-name-prompt label');
+        if (winNameLabel) winNameLabel.textContent = UI_STRINGS.winNameLabel[lang];
+        const winSaveBtn = document.getElementById('win-save-btn');
+        if (winSaveBtn) winSaveBtn.textContent = UI_STRINGS.winSave[lang];
+        const winNextBtn = document.getElementById('win-next-btn');
+        if (winNextBtn) winNextBtn.textContent = UI_STRINGS.winNext[lang];
+
+        // Lose modal
+        const loseTitle = document.querySelector('#lose-modal h2');
+        if (loseTitle) loseTitle.textContent = UI_STRINGS.loseTitle[lang];
+        const loseBtn = document.querySelector('#lose-modal .new-game-btn');
+        if (loseBtn) loseBtn.textContent = UI_STRINGS.loseButton[lang];
+
+        // Room-name modal
+        const roomJoinTitle = document.querySelector('#room-name-modal h2');
+        if (roomJoinTitle) roomJoinTitle.textContent = UI_STRINGS.roomJoinTitle[lang];
+        const roomJoinText = document.querySelector('#room-name-modal p');
+        if (roomJoinText) roomJoinText.textContent = UI_STRINGS.roomJoinText[lang];
+        const roomJoinLabel = document.querySelector('#room-name-modal label');
+        if (roomJoinLabel) roomJoinLabel.textContent = UI_STRINGS.roomJoinLabel[lang];
+        const roomJoinStart = document.getElementById('room-name-start-btn');
+        if (roomJoinStart) roomJoinStart.textContent = UI_STRINGS.roomJoinStart[lang];
+
+        // Dictionary modal
+        const dictTitle = document.querySelector('#dictionary-modal h2');
+        if (dictTitle) dictTitle.textContent = UI_STRINGS.dictionaryTitle[lang];
+        const dictIntro = document.querySelector('#dictionary-modal p');
+        if (dictIntro) dictIntro.textContent = UI_STRINGS.dictionaryIntro[lang];
+        const dictClose = document.querySelector('#dictionary-modal .new-game-btn');
+        if (dictClose) dictClose.textContent = UI_STRINGS.dictionaryClose[lang];
+
+        // Guide modal
+        const guideTitle = document.querySelector('#guide-modal h2');
+        if (guideTitle) guideTitle.textContent = UI_STRINGS.guideTitle[lang];
+        const guideStart = document.querySelector('#guide-modal .guide-close-btn');
+        if (guideStart) guideStart.textContent = UI_STRINGS.guideStart[lang];
+
+        // Leaderboard modal
+        const lbTitle = document.querySelector('#leaderboard-modal h2');
+        if (lbTitle) lbTitle.textContent = UI_STRINGS.leaderboardTitle[lang];
+        const lbClose = document.getElementById('leaderboard-close-btn');
+        if (lbClose) lbClose.textContent = UI_STRINGS.leaderboardClose[lang];
 
         this.updateHeaderDesc();
         this.updateHintsToggle();
