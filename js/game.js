@@ -172,19 +172,15 @@ class AISafetyGame {
         
         document.querySelectorAll('.welcome-mode-btn').forEach(btn => {
             btn.onclick = (e) => {
-                const regime = e.target.dataset.regime;
                 const mode = e.target.dataset.mode;
-                document.querySelectorAll(`.welcome-mode-btn[data-regime="${regime}"]`).forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.welcome-mode-btn').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
-                if (regime === 'solo') this.gameMode = mode;
+                this.gameMode = mode;
             };
         });
         
         document.getElementById('solo-templates-btn').onclick = () => document.getElementById('solo-templates-file').click();
-        document.getElementById('lobby-templates-btn').onclick = () => document.getElementById('lobby-templates-file').click();
-        
-        document.getElementById('solo-templates-file').onchange = (e) => this.handleTemplateFile(e, 'solo');
-        document.getElementById('lobby-templates-file').onchange = (e) => this.handleTemplateFile(e, 'lobby');
+        document.getElementById('solo-templates-file').onchange = (e) => this.handleTemplateFile(e);
         
         const roundsSlider = document.getElementById('lobby-rounds');
         const roundsValue = document.getElementById('lobby-rounds-value');
@@ -219,7 +215,7 @@ class AISafetyGame {
         }
     }
 
-    handleTemplateFile(event, regime) {
+    handleTemplateFile(event) {
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
@@ -234,22 +230,13 @@ class AISafetyGame {
                 });
                 // Accept: flat list of { name, description, tags: [...] }
                 this.customTemplates = json;
-                if (regime === 'solo') {
-                    document.getElementById('solo-templates-name').textContent = file.name;
-                } else {
-                    document.getElementById('lobby-templates-name').textContent = file.name;
-                }
+                document.getElementById('solo-templates-name').textContent = file.name;
             } catch (err) {
                 alert('Invalid JSON file. Expected an array of entries like { \"name\": \"Term\", \"description\": \"...\", \"tags\": [\"Category name\"] }.');
                 event.target.value = '';
             }
         };
         reader.readAsText(file);
-    }
-
-    getSelectedMode(regime) {
-        const btn = document.querySelector(`.welcome-mode-btn.active[data-regime="${regime}"]`);
-        return btn ? btn.dataset.mode : 'normal';
     }
 
     joinRoomFromInput() {
@@ -265,7 +252,7 @@ class AISafetyGame {
     }
 
     createRoomWithOptions() {
-        const mode = this.getSelectedMode('lobby');
+        const mode = this.gameMode || 'normal';
         const roundsInput = document.getElementById('lobby-rounds');
         if (!roundsInput) {
             alert('Error: Could not find rounds input');
@@ -286,8 +273,8 @@ class AISafetyGame {
     }
 
     startSolo() {
-        const mode = this.getSelectedMode('solo');
-        this.gameMode = mode;
+        const active = document.querySelector('.welcome-mode-btn.active');
+        this.gameMode = active ? active.dataset.mode : (this.gameMode || 'normal');
         const templates = this.customTemplates;
         if (templates) {
             this.customTemplates = templates;

@@ -748,6 +748,37 @@ body {
     max-width: 380px;
 }
 
+/* Unified settings card on landing page */
+.welcome-settings {
+    border: 1px solid #ecf0f1;
+    border-radius: 8px;
+    padding: 16px;
+    background: #fafafa;
+    margin-top: 16px;
+}
+
+.welcome-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.welcome-lobby-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 260px;
+}
+
+.welcome-rounds-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .welcome-solo-section h3, .welcome-lobby-section h3 {
     font-size: 1.1rem;
     color: #2c3e50;
