@@ -729,32 +729,32 @@ body {
     text-align: center;
 }
 
-.welcome-choices {
+.welcome-layout {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 28px;
+    justify-content: space-between;
+    gap: 24px;
+    margin-top: 20px;
 }
 
-.welcome-solo-section, .welcome-lobby-section {
-    border: 1px solid #ecf0f1;
-    border-radius: 8px;
-    padding: 16px;
-    background: #fafafa;
+.welcome-left {
+    flex: 1.1;
+}
+
+.welcome-right {
     flex: 1;
-    min-width: 300px;
-    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
-/* Unified settings card on landing page */
+/* Unified settings card on landing page (left side) */
 .welcome-settings {
     border: 1px solid #ecf0f1;
-    border-radius: 8px;
-    padding: 16px;
+    border-radius: 10px;
+    padding: 16px 18px;
     background: #fafafa;
-    margin-top: 16px;
 }
 
 .welcome-actions {
@@ -763,7 +763,7 @@ body {
     align-items: flex-end;
     justify-content: space-between;
     gap: 16px;
-    margin-top: 12px;
+    margin-top: 8px;
 }
 
 .welcome-lobby-controls {
@@ -780,12 +780,11 @@ body {
 }
 
 /* Visual divide between Solo and Room actions */
-.welcome-actions::before {
-    content: "";
-    flex: 0 0 1px;
+.welcome-actions-divider {
+    width: 1px;
     align-self: stretch;
     background: #ecf0f1;
-    margin: 0 8px;
+    margin: 0 10px;
 }
 
 .welcome-actions > .welcome-solo {
@@ -794,6 +793,47 @@ body {
 
 .welcome-actions > .welcome-lobby-controls {
     flex: 1 1 auto;
+}
+
+.welcome-actions-panel {
+    border: 1px solid #ecf0f1;
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: #fafafa;
+}
+
+.welcome-actions-panel label {
+    font-size: 13px;
+    color: #7f8c8d;
+}
+
+.welcome-actions-panel .welcome-btn {
+    width: 100%;
+}
+
+/* Box around pasted JSON & file controls */
+.templates-box {
+    border: 1px solid #e0e4e8;
+    border-radius: 8px;
+    padding: 10px;
+    background: #ffffff;
+}
+
+.templates-textarea {
+    width: 100%;
+    margin-top: 6px;
+    min-height: 80px;
+    max-height: 200px;
+    resize: vertical;
+    border-radius: 6px;
+    border: 1px solid #bdc3c7;
+    padding: 8px;
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.templates-apply-btn {
+    margin-top: 6px;
 }
 
 .welcome-solo-section h3, .welcome-lobby-section h3 {
@@ -888,24 +928,24 @@ body {
 }
 
 .welcome-solo {
-    background: #3498db;
+    background: #27ae60;
     color: white;
-    border-color: #2980b9;
+    border-color: #219a52;
 }
 
 .welcome-solo:hover {
-    background: #2980b9;
+    background: #219a52;
 }
 
 .welcome-lobby-create {
-    background: #3498db;
+    background: #27ae60;
     color: white;
-    border-color: #2980b9;
+    border-color: #219a52;
     width: 100%;
 }
 
 .welcome-lobby-create:hover {
-    background: #2980b9;
+    background: #219a52;
 }
 
 .welcome-join {
