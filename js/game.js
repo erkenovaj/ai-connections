@@ -1212,6 +1212,9 @@ class AISafetyGame {
     }
 
     showLoseModal() {
+        // Reveal the correct groups on the main board
+        this.revealSolutionOnBoard();
+
         const solutionContainer = document.getElementById('solution-container');
         solutionContainer.innerHTML = '';
         
@@ -1239,6 +1242,36 @@ class AISafetyGame {
         
         document.getElementById('lose-modal').style.display = 'flex';
         // Dog stays sad for lose modal
+    }
+
+    revealSolutionOnBoard() {
+        if (!this.currentPuzzle) return;
+        const boardEl = document.getElementById('game-board');
+        if (!boardEl) return;
+
+        boardEl.innerHTML = '';
+
+        const used = new Set();
+
+        // Render each solved category as a row of four green cards
+        for (const category of Object.values(this.currentPuzzle.categories)) {
+            category.members.forEach(concept => {
+                used.add(concept);
+                const card = document.createElement('div');
+                card.className = 'concept-card correct';
+                card.textContent = concept;
+                boardEl.appendChild(card);
+            });
+        }
+
+        // Any leftover concepts (decoys) go at the end
+        const leftovers = this.currentPuzzle.board.filter(c => !used.has(c));
+        leftovers.forEach(concept => {
+            const card = document.createElement('div');
+            card.className = 'concept-card';
+            card.textContent = concept;
+            boardEl.appendChild(card);
+        });
     }
 
     closeAllModals() {
