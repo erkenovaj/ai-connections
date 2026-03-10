@@ -36,8 +36,8 @@ const UI_STRINGS = {
         ru: 'Одиночная игра'
     },
     lobbyHeading: {
-        en: 'Create Room (multiplayer)',
-        ru: 'Создать комнату (мультиплеер)'
+        en: 'Multiplayer (create a room)',
+        ru: 'Мультиплеер (создать комнату)'
     },
     modeLabel: {
         en: 'Mode:',
@@ -60,8 +60,8 @@ const UI_STRINGS = {
         ru: 'Начать одиночную игру'
     },
     createRoom: {
-        en: 'Create Room',
-        ru: 'Создать комнату'
+        en: 'Start multiplayer game',
+        ru: 'Начать игру в мультиплеер'
     },
     backHome: {
         en: 'Back to home',

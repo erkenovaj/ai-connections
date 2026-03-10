@@ -48,28 +48,30 @@
                 </div>
 
                 <div class="welcome-right">
+                    <div class="welcome-actions-panel solo-panel">
+                        <h3 class="welcome-panel-title">Solo game</h3>
+                        <button type="button" class="welcome-btn welcome-solo" id="welcome-solo">Start solo game</button>
+                    </div>
+
+                    <div class="welcome-actions-panel room-panel">
+                        <h3 class="welcome-panel-title">Room (multiplayer)</h3>
+                        <div class="welcome-lobby-controls">
+                            <label for="lobby-rounds">Number of rounds (1-10)</label>
+                            <div class="welcome-rounds-row">
+                                <input type="range" id="lobby-rounds" min="1" max="10" value="1" class="welcome-rounds-slider">
+                                <span id="lobby-rounds-value" class="welcome-rounds-value">1</span>
+                            </div>
+                            <button type="button" class="welcome-btn welcome-lobby-create" id="welcome-lobby-create">Create room</button>
+                        </div>
+                    </div>
+
                     <div class="welcome-join">
-                        <label for="welcome-room-link">Have a room link? Paste it here:</label>
+                        <label for="welcome-room-link">Already have a room link?</label>
                         <div class="welcome-join-row">
                             <input type="text" id="welcome-room-link" placeholder="https://...?room=abc12345">
                             <button type="button" class="welcome-join-btn" id="welcome-join-btn">Join</button>
                         </div>
                         <p class="welcome-hint">Solo: play on your own, scores saved online. Room: same puzzle for everyone, leaderboard and download.</p>
-                    </div>
-
-                    <div class="welcome-actions-panel">
-                        <div class="welcome-actions">
-                            <button type="button" class="welcome-btn welcome-solo" id="welcome-solo">Solo game</button>
-                            <div class="welcome-actions-divider"></div>
-                            <div class="welcome-lobby-controls">
-                                <label for="lobby-rounds">Room: number of rounds (1-10)</label>
-                                <div class="welcome-rounds-row">
-                                    <input type="range" id="lobby-rounds" min="1" max="10" value="1" class="welcome-rounds-slider">
-                                    <span id="lobby-rounds-value" class="welcome-rounds-value">1</span>
-                                </div>
-                                <button type="button" class="welcome-btn welcome-lobby-create" id="welcome-lobby-create">Create Room</button>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

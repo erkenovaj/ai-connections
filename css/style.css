@@ -811,6 +811,13 @@ body {
     width: 100%;
 }
 
+.welcome-panel-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 8px 0;
+}
+
 /* Box around pasted JSON & file controls */
 .templates-box {
     border: 1px solid #e0e4e8;
