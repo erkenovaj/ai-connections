@@ -2,7 +2,7 @@ import PuzzleGenerator from './puzzle-generator.js';
 import TooltipManager from './tooltip.js';
 import DogAnimations from './dog-animations.js';
 import Sounds from './sounds.js';
-import { CONFIG, CONCEPT_DEFINITIONS } from './config.js';
+import { CONFIG, CONCEPT_DEFINITIONS, CATEGORY_TEMPLATES } from './config.js';
 import * as api from './api.js';
 
 const LEADERBOARD_KEY = 'ai_connections_leaderboard';
@@ -239,6 +239,7 @@ class AISafetyGame {
         this.customTemplates = null;
         this.currentRound = 1;
         this.totalRounds = 1;
+        this.dictionaryEntries = [];
         this.language = localStorage.getItem(LANG_STORAGE_KEY) || 'en';
         this.init();
     }
@@ -248,6 +249,7 @@ class AISafetyGame {
         if (urlConfig.mode !== null) this.gameMode = urlConfig.mode;
         this.bindEvents();
         this.applyLanguage();
+        this.updateDictionaryEntries();
         this.updateHintsToggle();
         this.updateHintButton();
         this.updateModeToggle();
@@ -314,12 +316,13 @@ class AISafetyGame {
                             throw new Error('Invalid format');
                         }
                     });
-                this.customTemplates = json;
-                // Replace concept definitions with those from the pasted JSON
-                Object.keys(CONCEPT_DEFINITIONS).forEach(k => delete CONCEPT_DEFINITIONS[k]);
-                json.forEach(entry => {
-                    CONCEPT_DEFINITIONS[entry.name] = entry.description;
-                });
+                    this.customTemplates = json;
+                    // Replace concept definitions with those from the pasted JSON
+                    Object.keys(CONCEPT_DEFINITIONS).forEach(k => delete CONCEPT_DEFINITIONS[k]);
+                    json.forEach(entry => {
+                        CONCEPT_DEFINITIONS[entry.name] = entry.description;
+                    });
+                    this.updateDictionaryEntries();
                 document.getElementById('solo-templates-name').textContent = 'Pasted JSON';
                 } catch (err) {
                     alert('Invalid JSON. Expected an array of entries like { "name": "Term", "description": "...", "tags": ["Category name"] }.');
@@ -347,6 +350,7 @@ class AISafetyGame {
                 json.forEach(entry => {
                     CONCEPT_DEFINITIONS[entry.name] = entry.description;
                 });
+                this.updateDictionaryEntries();
                 document.getElementById('solo-templates-name').textContent = file.name;
             } catch (err) {
                 alert('Invalid JSON file. Expected an array of entries like { \"name\": \"Term\", \"description\": \"...\", \"tags\": [\"Category name\"] }.');
@@ -703,6 +707,7 @@ class AISafetyGame {
         const seed = this.regime === 'lobby' ? this.puzzleSeed : null;
         const templates = this.customTemplates;
         this.currentPuzzle = PuzzleGenerator.generatePuzzle(this.getEffectiveMode(), seed, templates);
+        this.updateDictionaryEntries();
         this.selectedConcepts = [];
         this.mistakes = 0;
         this.solvedCategories = 0;
@@ -1081,8 +1086,12 @@ class AISafetyGame {
         const conceptList = document.getElementById('dictionary-list');
         
         conceptList.innerHTML = '';
-        
-        Object.entries(CONCEPT_DEFINITIONS).forEach(([concept, definition]) => {
+
+        const entries = (Array.isArray(this.dictionaryEntries) && this.dictionaryEntries.length > 0)
+            ? this.dictionaryEntries
+            : Object.entries(CONCEPT_DEFINITIONS).map(([name, description]) => ({ name, description }));
+
+        entries.forEach(({ name: concept, description: definition }) => {
             const item = document.createElement('div');
             item.className = 'concept-item';
             
@@ -1100,6 +1109,20 @@ class AISafetyGame {
         });
         
         dictionaryModal.style.display = 'flex';
+    }
+
+    updateDictionaryEntries() {
+        const source = this.customTemplates && Array.isArray(this.customTemplates) && this.customTemplates.length
+            ? this.customTemplates
+            : (Array.isArray(CATEGORY_TEMPLATES) && CATEGORY_TEMPLATES.length ? CATEGORY_TEMPLATES : null);
+
+        if (source) {
+            this.dictionaryEntries = source
+                .filter(entry => entry && typeof entry.name === 'string' && typeof entry.description === 'string')
+                .map(entry => ({ name: entry.name, description: entry.description }));
+        } else {
+            this.dictionaryEntries = Object.entries(CONCEPT_DEFINITIONS).map(([name, description]) => ({ name, description }));
+        }
     }
 
     showGuide() {
@@ -1534,6 +1557,7 @@ class AISafetyGame {
         const lbClose = document.getElementById('leaderboard-close-btn');
         if (lbClose) lbClose.textContent = UI_STRINGS.leaderboardClose[lang];
 
+        this.updateDictionaryEntries();
         this.updateHeaderDesc();
         this.updateHintsToggle();
         localStorage.setItem(LANG_STORAGE_KEY, lang);
