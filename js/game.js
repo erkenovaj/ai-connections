@@ -194,7 +194,94 @@ const UI_STRINGS = {
     leaderboardClose: {
         en: 'Close',
         ru: 'Закрыть'
-    }
+    },
+    copyLink: {
+        en: 'Copy link',
+        ru: 'Копировать ссылку'
+    },
+    copied: {
+        en: 'Copied!',
+        ru: 'Скопировано!'
+    },
+    lobbyLeaderboard: {
+        en: 'Leaderboard',
+        ru: 'Таблица лидеров'
+    },
+    downloadResults: {
+        en: 'Download results',
+        ru: 'Скачать результаты'
+    },
+    hintLabel: {
+        en: '💡 Hint (%d)',
+        ru: '💡 Подсказка (%d)'
+    },
+    roundOf: {
+        en: 'Round %1 of %2',
+        ru: 'Раунд %1 из %2'
+    },
+    scoreEmpty: {
+        en: 'Score: —',
+        ru: 'Очки: —'
+    },
+    scoreWithNumber: {
+        en: 'Score: %d',
+        ru: 'Очки: %d'
+    },
+    categoryN: {
+        en: 'Category %d',
+        ru: 'Категория %d'
+    },
+    guideSections: [
+        {
+            title: { en: '🎯 Objective', ru: '🎯 Цель' },
+            body: {
+                en: '<p><strong>Normal:</strong> Find 4 groups of 4 concepts. <strong>Advanced:</strong> Find 3 groups of 4 (plus decoys). Each group corresponds to a category with increasing difficulty.</p>',
+                ru: '<p><strong>Обычный:</strong> найдите 4 группы по 4 понятия. <strong>Продвинутый:</strong> найдите 3 группы по 4 (плюс отвлекающие). Каждая группа — категория с возрастающей сложностью.</p>'
+            }
+        },
+        {
+            title: { en: '🕹️ Gameplay', ru: '🕹️ Как играть' },
+            body: {
+                en: '<ul><li><strong>Select 4 tiles</strong> that you think belong to the same category</li><li><strong>Click Submit</strong> to check if your grouping is correct</li><li><strong>Be careful!</strong> Many concepts can fit multiple categories</li><li><strong>You have 4 attempts</strong> - use them wisely!</li></ul>',
+                ru: '<ul><li><strong>Выберите 4 плитки</strong>, которые, по вашему мнению, относятся к одной категории</li><li><strong>Нажмите «Отправить»</strong>, чтобы проверить группировку</li><li><strong>Будьте внимательны!</strong> Многие понятия подходят к разным категориям</li><li><strong>У вас 4 попытки</strong> — используйте их с умом!</li></ul>'
+            }
+        },
+        {
+            title: { en: '🎨 Difficulty Levels', ru: '🎨 Уровни сложности' },
+            body: {
+                en: '<ul><li><span class="easy-badge">EASY</span> - More obvious connections</li><li><span class="medium-badge">MEDIUM</span> - Requires some AI safety knowledge</li><li><span class="hard-badge">HARD</span> - Subtle philosophical connections</li><li><span class="harder-badge">HARDER</span> - (Normal mode) Most challenging</li></ul>',
+                ru: '<ul><li><span class="easy-badge">EASY</span> — более очевидные связи</li><li><span class="medium-badge">MEDIUM</span> — нужны базовые знания по безопасности ИИ</li><li><span class="hard-badge">HARD</span> — тонкие философские связи</li><li><span class="harder-badge">HARDER</span> — (обычный режим) самый сложный</li></ul>'
+            }
+        },
+        {
+            title: { en: '⏱️ Timer &amp; Score', ru: '⏱️ Таймер и очки' },
+            body: {
+                en: '<ul><li>The <strong>timer</strong> runs from the start of each game until you win or lose.</li><li><strong>Score</strong> is based on correct categories, mistakes, and time. Higher is better!</li><li>Save your name when you win to appear on the <strong>Leaderboard</strong> (saved online when the server is running).</li></ul>',
+                ru: '<ul><li><strong>Таймер</strong> идёт с начала игры до победы или поражения.</li><li><strong>Очки</strong> зависят от угаданных категорий, ошибок и времени. Чем больше — тем лучше!</li><li>Введите имя при победе, чтобы попасть в <strong>таблицу лидеров</strong> (сохраняется онлайн при работающем сервере).</li></ul>'
+            }
+        },
+        {
+            title: { en: '📱 On Phones &amp; Tablets', ru: '📱 На телефонах и планшетах' },
+            body: {
+                en: '<ul><li><strong>Tap a tile</strong> once to see its definition (when hints are ON). Tap again to select it for your group.</li><li>Use the Dictionary button for all definitions.</li></ul>',
+                ru: '<ul><li><strong>Нажмите на плитку</strong> один раз, чтобы увидеть определение (при включённых подсказках). Нажмите снова, чтобы выбрать её в группу.</li><li>Кнопка «Словарь» — все определения.</li></ul>'
+            }
+        },
+        {
+            title: { en: '🐕 The AI Safety Dog', ru: '🐕 Пёс безопасности ИИ' },
+            body: {
+                en: '<p>Your canine companion reacts to your progress:</p><ul><li>🐕 <strong>Happy</strong> - When you\'re doing well</li><li>😟 <strong>Worried</strong> - When you make mistakes</li><li>🎉 <strong>Celebrating</strong> - When you solve categories</li><li>😴 <strong>Sleeping</strong> - When the game ends</li></ul>',
+                ru: '<p>Ваш пёс реагирует на ваш прогресс:</p><ul><li>🐕 <strong>Доволен</strong> — когда вы справляетесь хорошо</li><li>😟 <strong>Беспокоится</strong> — когда вы ошибаетесь</li><li>🎉 <strong>Празднует</strong> — когда вы отгадываете категории</li><li>😴 <strong>Спит</strong> — когда игра закончена</li></ul>'
+            }
+        },
+        {
+            title: { en: '💡 Tips', ru: '💡 Советы' },
+            body: {
+                en: '<ul><li>Hover (or tap on mobile) over concepts to see their definitions</li><li>Use the Dictionary for quick reference</li><li>Look for both technical and thematic connections</li><li>Some concepts might fit multiple plausible groups</li><li>Think about both the meaning and context of each term</li></ul>',
+                ru: '<ul><li>Наведите курсор (или нажмите на мобильном) на понятие, чтобы увидеть определение</li><li>Словарь — для быстрой справки</li><li>Ищите и технические, и тематические связи</li><li>Некоторые понятия могут подходить к разным группам</li><li>Учитывайте и значение, и контекст каждого термина</li></ul>'
+            }
+        }
+    ]
 };
 
 function parseUrlConfig() {
@@ -492,8 +579,9 @@ class AISafetyGame {
         if (!this.joinLink) return;
         navigator.clipboard.writeText(this.joinLink).then(() => {
             const btn = document.getElementById('lobby-copy-btn');
-            const orig = btn.textContent;
-            btn.textContent = 'Copied!';
+            const lang = this.language === 'ru' ? 'ru' : 'en';
+            const orig = UI_STRINGS.copyLink[lang];
+            btn.textContent = UI_STRINGS.copied[lang];
             setTimeout(() => { btn.textContent = orig; }, 1500);
         });
     }
@@ -676,7 +764,8 @@ class AISafetyGame {
     updateHintButton() {
         const btn = document.querySelector('.category-hints-toggle-btn');
         if (!btn) return;
-        btn.textContent = `💡 Hint (${this.hintsRemaining})`;
+        const lang = this.language === 'ru' ? 'ru' : 'en';
+        btn.textContent = UI_STRINGS.hintLabel[lang].replace('%d', String(this.hintsRemaining));
         btn.disabled = this.hintsRemaining <= 0;
         btn.classList.toggle('on', this.hintsRemaining > 0);
         btn.classList.toggle('off', this.hintsRemaining <= 0);
@@ -741,8 +830,9 @@ class AISafetyGame {
         if (!roundEl) return;
         if (this.regime === 'lobby' && this.totalRounds) {
             const total = Number(this.totalRounds) || 1;
+            const lang = this.language === 'ru' ? 'ru' : 'en';
             roundEl.style.display = 'block';
-            roundEl.textContent = `Round ${this.currentRound} of ${total}`;
+            roundEl.textContent = UI_STRINGS.roundOf[lang].replace('%1', String(this.currentRound)).replace('%2', String(total));
         } else {
             roundEl.style.display = 'none';
         }
@@ -777,7 +867,8 @@ class AISafetyGame {
     updateScoreDisplay(score) {
         const el = document.getElementById('score-display');
         if (!el) return;
-        el.textContent = score === null ? 'Score: —' : `Score: ${score}`;
+        const lang = this.language === 'ru' ? 'ru' : 'en';
+        el.textContent = score === null ? UI_STRINGS.scoreEmpty[lang] : UI_STRINGS.scoreWithNumber[lang].replace('%d', String(score));
     }
 
     computeScore(won) {
@@ -1410,10 +1501,11 @@ class AISafetyGame {
     }
 
     resetCategorySlots() {
+        const lang = this.language === 'ru' ? 'ru' : 'en';
         const slots = document.querySelectorAll('.category-slot');
         slots.forEach((slot, index) => {
             slot.classList.remove('filled', 'incorrect');
-            slot.querySelector('.category-name').textContent = `Category ${index + 1}`;
+            slot.querySelector('.category-name').textContent = UI_STRINGS.categoryN[lang].replace('%d', String(index + 1));
             slot.querySelector('.category-concepts').textContent = '';
         });
     }
@@ -1550,12 +1642,43 @@ class AISafetyGame {
         if (guideTitle) guideTitle.textContent = UI_STRINGS.guideTitle[lang];
         const guideStart = document.querySelector('#guide-modal .guide-close-btn');
         if (guideStart) guideStart.textContent = UI_STRINGS.guideStart[lang];
+        const guideSections = document.querySelectorAll('#guide-modal .guide-section');
+        UI_STRINGS.guideSections.forEach((sectionData, i) => {
+            const section = guideSections[i];
+            if (!section || !sectionData) return;
+            const h3 = section.querySelector('h3');
+            if (h3) h3.textContent = sectionData.title[lang];
+            const afterH3 = Array.from(section.children).slice(1);
+            afterH3.forEach(c => c.remove());
+            section.insertAdjacentHTML('beforeend', sectionData.body[lang]);
+        });
 
         // Leaderboard modal
         const lbTitle = document.querySelector('#leaderboard-modal h2');
         if (lbTitle) lbTitle.textContent = UI_STRINGS.leaderboardTitle[lang];
         const lbClose = document.getElementById('leaderboard-close-btn');
         if (lbClose) lbClose.textContent = UI_STRINGS.leaderboardClose[lang];
+
+        // Lobby bar (puzzle page)
+        const copyBtn = document.getElementById('lobby-copy-btn');
+        if (copyBtn) copyBtn.textContent = UI_STRINGS.copyLink[lang];
+        const lobbyLbBtn = document.getElementById('lobby-leaderboard-btn');
+        if (lobbyLbBtn) lobbyLbBtn.textContent = UI_STRINGS.lobbyLeaderboard[lang];
+        const lobbyDownloadBtn = document.getElementById('lobby-download-btn');
+        if (lobbyDownloadBtn) lobbyDownloadBtn.textContent = UI_STRINGS.downloadResults[lang];
+        const lbDownloadBtn = document.getElementById('leaderboard-download-btn');
+        if (lbDownloadBtn) lbDownloadBtn.textContent = UI_STRINGS.downloadResults[lang];
+
+        // Puzzle page: score, hint button, round, category placeholders
+        this.updateScoreDisplay(this.currentPuzzle ? this.currentScore : null);
+        this.updateHintButton();
+        this.updateRoundDisplay();
+        document.querySelectorAll('.category-slot').forEach((slot, index) => {
+            if (!slot.classList.contains('filled')) {
+                const nameEl = slot.querySelector('.category-name');
+                if (nameEl) nameEl.textContent = UI_STRINGS.categoryN[lang].replace('%d', String(index + 1));
+            }
+        });
 
         this.updateDictionaryEntries();
         this.updateHeaderDesc();
