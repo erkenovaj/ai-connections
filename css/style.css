@@ -779,6 +779,23 @@ body {
     gap: 8px;
 }
 
+/* Visual divide between Solo and Room actions */
+.welcome-actions::before {
+    content: "";
+    flex: 0 0 1px;
+    align-self: stretch;
+    background: #ecf0f1;
+    margin: 0 8px;
+}
+
+.welcome-actions > .welcome-solo {
+    flex: 0 0 auto;
+}
+
+.welcome-actions > .welcome-lobby-controls {
+    flex: 1 1 auto;
+}
+
 .welcome-solo-section h3, .welcome-lobby-section h3 {
     font-size: 1.1rem;
     color: #2c3e50;
@@ -881,14 +898,14 @@ body {
 }
 
 .welcome-lobby-create {
-    background: #27ae60;
+    background: #3498db;
     color: white;
-    border-color: #219a52;
+    border-color: #2980b9;
     width: 100%;
 }
 
 .welcome-lobby-create:hover {
-    background: #219a52;
+    background: #2980b9;
 }
 
 .welcome-join {
