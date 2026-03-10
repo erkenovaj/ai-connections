@@ -199,18 +199,20 @@ class AISafetyGame {
             try {
                 const json = JSON.parse(e.target.result);
                 if (!Array.isArray(json) || json.length === 0) throw new Error('Invalid format');
-                json.forEach(cat => {
-                    if (!cat.name || !Array.isArray(cat.members) || cat.members.length !== 4) throw new Error('Invalid format');
+                json.forEach(entry => {
+                    if (!entry || typeof entry.name !== 'string' || typeof entry.description !== 'string' || !Array.isArray(entry.tags) || entry.tags.length === 0) {
+                        throw new Error('Invalid format');
+                    }
                 });
+                // Accept: flat list of { name, description, tags: [...] }
+                this.customTemplates = json;
                 if (regime === 'solo') {
-                    this.customTemplates = json;
                     document.getElementById('solo-templates-name').textContent = file.name;
                 } else {
-                    this.customTemplates = json;
                     document.getElementById('lobby-templates-name').textContent = file.name;
                 }
             } catch (err) {
-                alert('Invalid JSON file. Expected array of categories with name and members (4 items each).');
+                alert('Invalid JSON file. Expected an array of entries like { \"name\": \"Term\", \"description\": \"...\", \"tags\": [\"Category name\"] }.');
                 event.target.value = '';
             }
         };

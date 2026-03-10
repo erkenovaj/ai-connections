@@ -25,22 +25,55 @@ class PuzzleGenerator {
     static generatePuzzle(mode = 'normal', seed = null, customTemplates = null) {
         const templates = customTemplates || CATEGORY_TEMPLATES;
         if (!Array.isArray(templates) || templates.length === 0) {
-            throw new Error('Cannot generate puzzle: category templates not loaded. Check that category-templates.json is deployed (e.g. on GitHub Pages).');
+            throw new Error('Cannot generate puzzle: category templates not loaded. Check that category-templates-new.json is deployed.');
         }
+
         const rand = seed ? seededRandom(seed) : () => Math.random();
-        const allConcepts = Object.keys(CONCEPT_DEFINITIONS);
         const numCategories = mode === 'normal'
             ? CONFIG.TOTAL_CATEGORIES_NORMAL
             : CONFIG.TOTAL_CATEGORIES_ADVANCED;
 
-        const shuffledCategories = [...templates].sort(() => rand() - 0.5);
-        const selectedCategories = shuffledCategories.slice(0, numCategories);
-
-        const allPuzzleConcepts = new Set();
-        selectedCategories.forEach(category => {
-            category.members.forEach(concept => allPuzzleConcepts.add(concept));
+        // Build map tag -> list of term names
+        const tagMap = new Map();
+        templates.forEach(entry => {
+            if (!entry || !entry.name || !Array.isArray(entry.tags)) return;
+            entry.tags.forEach(tag => {
+                if (!tag) return;
+                const key = String(tag);
+                if (!tagMap.has(key)) tagMap.set(key, []);
+                tagMap.get(key).push(entry.name);
+            });
         });
 
+        // Candidate tags must have at least 4 terms
+        const candidateTags = Array.from(tagMap.entries())
+            .filter(([, terms]) => terms.length >= 4)
+            .map(([tag, terms]) => ({ tag, terms: [...terms] }));
+
+        if (candidateTags.length < numCategories) {
+            throw new Error('Not enough tags with at least 4 terms to generate a puzzle.');
+        }
+
+        // Shuffle tags and pick the needed number of categories
+        candidateTags.sort(() => rand() - 0.5);
+        const selected = candidateTags.slice(0, numCategories);
+
+        const categories = {};
+        const allPuzzleConcepts = new Set();
+
+        selected.forEach((entry, i) => {
+            const d = DIFFICULTIES[i];
+            const terms = [...entry.terms].sort(() => rand() - 0.5).slice(0, CONFIG.CONCEPTS_PER_GROUP);
+            terms.forEach(name => allPuzzleConcepts.add(name));
+            categories[d] = {
+                name: entry.tag,
+                members: terms,
+                difficulty: d
+            };
+        });
+
+        // Fill remaining slots with decoy concepts (from CONCEPT_DEFINITIONS, excluding already used)
+        const allConcepts = Object.keys(CONCEPT_DEFINITIONS);
         const neededConcepts = 16 - allPuzzleConcepts.size;
         if (neededConcepts > 0) {
             const availableDecoys = allConcepts.filter(concept => !allPuzzleConcepts.has(concept));
@@ -49,12 +82,6 @@ class PuzzleGenerator {
         }
 
         const boardConcepts = Array.from(allPuzzleConcepts).sort(() => rand() - 0.5);
-
-        const categories = {};
-        selectedCategories.forEach((cat, i) => {
-            const d = DIFFICULTIES[i];
-            categories[d] = { ...cat, difficulty: d };
-        });
 
         return {
             board: boardConcepts,
