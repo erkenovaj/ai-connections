@@ -189,6 +189,34 @@ class AISafetyGame {
         const roundsSlider = document.getElementById('lobby-rounds');
         const roundsValue = document.getElementById('lobby-rounds-value');
         roundsSlider.oninput = (e) => { roundsValue.textContent = e.target.value; };
+
+        const applyBtn = document.getElementById('templates-apply-btn');
+        if (applyBtn) {
+            applyBtn.onclick = () => {
+                const textarea = document.getElementById('templates-textarea');
+                if (!textarea) return;
+                const raw = textarea.value && textarea.value.trim();
+                if (!raw) {
+                    alert('Paste JSON into the box before applying.');
+                    return;
+                }
+                try {
+                    const json = JSON.parse(raw);
+                    if (!Array.isArray(json) || json.length === 0) {
+                        throw new Error('Invalid format');
+                    }
+                    json.forEach(entry => {
+                        if (!entry || typeof entry.name !== 'string' || typeof entry.description !== 'string' || !Array.isArray(entry.tags) || entry.tags.length === 0) {
+                            throw new Error('Invalid format');
+                        }
+                    });
+                    this.customTemplates = json;
+                    document.getElementById('solo-templates-name').textContent = 'Pasted JSON';
+                } catch (err) {
+                    alert('Invalid JSON. Expected an array of entries like { "name": "Term", "description": "...", "tags": ["Category name"] }.');
+                }
+            };
+        }
     }
 
     handleTemplateFile(event, regime) {

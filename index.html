@@ -33,10 +33,12 @@
                         <button type="button" class="welcome-file-btn" id="solo-templates-btn">Choose file</button>
                         <span id="solo-templates-name" class="welcome-file-name"></span>
                         <p class="welcome-hint" style="margin-top: 6px;">
-                            Use a JSON file with entries like:
+                            Use a JSON file or paste JSON below. Example:
                             <code>[{ "name": "Instrumental Convergence", "description": "Short definition...", "tags": ["Technical Failure Modes"] }]</code>
                             – each <code>name</code> is a term, and each string in <code>tags</code> is a category name.
                         </p>
+                        <textarea id="templates-textarea" rows="5" style="width:100%; margin-top:6px;" placeholder='Or paste JSON here (same format as above).'></textarea>
+                        <button type="button" class="welcome-file-btn" id="templates-apply-btn" style="margin-top:6px;">Use pasted JSON</button>
                     </div>
                     <button type="button" class="welcome-btn welcome-solo" id="welcome-solo">Start Solo Game</button>
                 </div>
