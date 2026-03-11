@@ -4,11 +4,16 @@
  */
 const getBase = () => (typeof window !== 'undefined' ? window.location.origin : '');
 
-export async function createRoom(mode = 'normal', rounds = 1) {
+export async function createRoom(mode = 'normal', rounds = 1, templates = null) {
     const res = await fetch(`${getBase()}/api/room`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode, rounds })
+        body: JSON.stringify({
+            mode,
+            rounds,
+            // Only send templates when custom templates are provided (non-default)
+            templates: Array.isArray(templates) && templates.length ? templates : null
+        })
     });
     if (!res.ok) throw new Error(await res.text());
     return res.json();

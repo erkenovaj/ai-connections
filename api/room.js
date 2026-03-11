@@ -17,13 +17,14 @@ export default async function handler(req, res) {
     const body = parseBody(req);
     const mode = body.mode === 'advanced' ? 'advanced' : 'normal';
     const rounds = Math.max(1, Math.min(10, Number(body.rounds) || 1));
+    const templates = Array.isArray(body.templates) && body.templates.length ? JSON.stringify(body.templates) : null;
     const id = randomId();
     const puzzle_seed = id + '-' + Date.now();
     const created_at = Date.now();
     const db = await getDb();
     await db.execute({
-      sql: 'INSERT INTO rooms (id, mode, puzzle_seed, rounds, created_at) VALUES (?, ?, ?, ?, ?)',
-      args: [id, mode, puzzle_seed, rounds, created_at],
+      sql: 'INSERT INTO rooms (id, mode, puzzle_seed, rounds, created_at, templates_json) VALUES (?, ?, ?, ?, ?, ?)',
+      args: [id, mode, puzzle_seed, rounds, created_at, templates],
     });
     const origin = req.headers.origin || (req.headers['x-forwarded-proto'] || 'https') + '://' + (req.headers['x-forwarded-host'] || req.headers.host || '');
     const joinLink = `${origin}?room=${id}`;

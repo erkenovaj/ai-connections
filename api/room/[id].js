@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   try {
     const db = await getDb();
     const roomResult = await db.execute({
-      sql: 'SELECT id, mode, puzzle_seed, rounds FROM rooms WHERE id = ?',
+      sql: 'SELECT id, mode, puzzle_seed, rounds, templates_json FROM rooms WHERE id = ?',
       args: [id],
     });
     const row = roomResult.rows[0];
@@ -18,11 +18,20 @@ export default async function handler(req, res) {
       args: [row.id],
     });
     const rounds = row.rounds != null ? Number(row.rounds) : 1;
+    let templates = null;
+    if (row.templates_json) {
+      try {
+        templates = JSON.parse(row.templates_json);
+      } catch (_) {
+        templates = null;
+      }
+    }
     res.status(200).json({
       roomId: row.id,
       mode: row.mode,
       seed: row.puzzle_seed,
       rounds,
+      templates,
       results: resultsResult.rows,
     });
   } catch (e) {
