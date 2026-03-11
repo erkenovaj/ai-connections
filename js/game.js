@@ -376,7 +376,6 @@ class AISafetyGame {
     }
 
     refreshConceptDefinitionsForLanguage(lang) {
-        Object.keys(CONCEPT_DEFINITIONS).forEach(k => delete CONCEPT_DEFINITIONS[k]);
         const templates = this.getTemplatesForLanguage(lang);
         if (templates) {
             templates.forEach(entry => {
