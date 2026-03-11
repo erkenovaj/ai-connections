@@ -376,12 +376,78 @@ class AISafetyGame {
     }
 
     refreshConceptDefinitionsForLanguage(lang) {
+        Object.keys(CONCEPT_DEFINITIONS).forEach(k => delete CONCEPT_DEFINITIONS[k]);
         const templates = this.getTemplatesForLanguage(lang);
         if (templates) {
             templates.forEach(entry => {
                 CONCEPT_DEFINITIONS[entry.name] = entry.description;
             });
         }
+    }
+
+    /**
+     * Build maps from old-language concept names and category tag names to new-language.
+     * Used when switching language mid-game so the same logical puzzle is shown in the other language.
+     */
+    buildLanguageMaps(oldLang, newLang) {
+        const oldToNew = new Map();
+        const oldTagToNewTag = new Map();
+        const source = this.customTemplates && Array.isArray(this.customTemplates) && this.customTemplates.length
+            ? this.customTemplates
+            : (Array.isArray(CATEGORY_TEMPLATES) && CATEGORY_TEMPLATES.length ? CATEGORY_TEMPLATES : null);
+        if (!source) return { oldToNew, oldTagToNewTag };
+        for (const entry of source) {
+            const oldE = this.normalizeTemplateEntry(entry, oldLang);
+            const newE = this.normalizeTemplateEntry(entry, newLang);
+            if (oldE && newE) {
+                oldToNew.set(oldE.name, newE.name);
+                for (let i = 0; i < oldE.tags.length; i++) {
+                    if (newE.tags[i]) oldTagToNewTag.set(oldE.tags[i], newE.tags[i]);
+                }
+            }
+        }
+        return { oldToNew, oldTagToNewTag };
+    }
+
+    /**
+     * Translate current puzzle and all game state to the new language (same game, same mistakes/solves).
+     * @param {string} oldLang - language the puzzle is currently in
+     * @param {string} newLang - language to switch to
+     */
+    translateCurrentGameToLanguage(oldLang, newLang) {
+        if (!this.currentPuzzle) return;
+        const { oldToNew, oldTagToNewTag } = this.buildLanguageMaps(oldLang, newLang);
+        const mapConcept = (c) => oldToNew.get(c) ?? c;
+        const mapTag = (t) => oldTagToNewTag.get(t) ?? t;
+
+        this.currentPuzzle.board = this.currentPuzzle.board.map(mapConcept);
+        for (const difficulty of Object.keys(this.currentPuzzle.categories)) {
+            const cat = this.currentPuzzle.categories[difficulty];
+            cat.name = mapTag(cat.name);
+            cat.members = cat.members.map(mapConcept);
+        }
+        const newConceptCategoryMap = {};
+        for (const oldConcept of Object.keys(this.conceptCategoryMap)) {
+            const oldCat = this.conceptCategoryMap[oldConcept];
+            newConceptCategoryMap[mapConcept(oldConcept)] = mapTag(oldCat);
+        }
+        this.conceptCategoryMap = newConceptCategoryMap;
+        this.selectedConcepts = this.selectedConcepts.map(mapConcept);
+        this.hintRevealedConcepts = new Set([...this.hintRevealedConcepts].map(mapConcept));
+
+        this.refreshConceptDefinitionsForLanguage(newLang);
+        this.updateDictionaryEntries();
+        this.createGameBoard();
+        this.updateSubmitButton();
+        this.updateHintRevealedOnBoard();
+        document.querySelectorAll('.category-slot.filled').forEach(slot => {
+            const difficulty = slot.dataset.difficulty;
+            const category = this.currentPuzzle.categories[difficulty];
+            if (category) {
+                slot.querySelector('.category-name').textContent = category.name;
+                slot.querySelector('.category-concepts').textContent = category.members.join(', ');
+            }
+        });
     }
 
     init() {
@@ -1751,8 +1817,11 @@ class AISafetyGame {
     }
 
     toggleLanguage() {
+        const oldLang = this.language;
         this.language = this.language === 'en' ? 'ru' : 'en';
+        const newLang = this.language;
         this.applyLanguage();
+        this.translateCurrentGameToLanguage(oldLang, newLang);
     }
 }
 
