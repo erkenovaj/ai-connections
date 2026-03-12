@@ -776,6 +776,7 @@ class AISafetyGame {
         });
 
         document.addEventListener('click', (e) => {
+            if (isTouchDevice()) return;
             if (!e.target.closest('.concept-tooltip')) {
                 this.tooltipManager.forceHide();
             }

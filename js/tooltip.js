@@ -91,6 +91,7 @@ class TooltipManager {
     }
 
     unstick() {
+        if (isTouchEnv()) return;
         this.isSticky = false;
         this.tooltip.classList.remove('sticky');
     }
