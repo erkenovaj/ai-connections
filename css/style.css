@@ -667,6 +667,36 @@ body {
         justify-content: center;
     }
 
+    /* Welcome layout: stack vertically on phones */
+    .welcome-layout {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .welcome-left,
+    .welcome-right {
+        width: 100%;
+        flex: none;
+    }
+
+    /* Mode block wider on phones */
+    .welcome-settings {
+        width: 100%;
+    }
+
+    /* On phones: put link box between header and mode/solo/room */
+    .welcome-card > .welcome-layout {
+        order: 2;
+    }
+
+    .welcome-card > .welcome-join {
+        order: 1;
+    }
+
+    .welcome-card {
+        padding: 20px;
+    }
+
     .concept-tooltip {
         max-width: min(280px, 90vw);
         font-size: 13px;
@@ -689,10 +719,43 @@ body {
         min-height: 48px;
         font-size: 10px;
     }
+}
 
-    /* Stack solo / lobby sections vertically on very small screens */
-    .welcome-choices {
+/* Phone layout for in-game controls and categories */
+@media (max-width: 600px) {
+    /* Submit / deselect / new-game in a row under the tiles */
+    .game-main {
         flex-direction: column;
+    }
+
+    .game-left,
+    .game-right {
+        width: 100%;
+    }
+
+    .controls {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .controls button {
+        flex: 1 1 0;
+        white-space: nowrap;
+    }
+
+    /* Categories: two per row, two rows */
+    .category-slots {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    .category-slots.slots-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -713,6 +776,9 @@ body {
     padding: 32px;
     max-width: 900px;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .welcome-card h1 {
