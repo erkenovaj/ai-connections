@@ -1036,7 +1036,8 @@ class AISafetyGame {
                 card.classList.add('correct');
             }
 
-            if (this.hintsEnabled) {
+            // Hover tooltips only on non-touch devices. On touch, tooltip is shown by first tap in handleCardClick.
+            if (this.hintsEnabled && !isTouchDevice()) {
                 card.addEventListener('mouseenter', () => {
                     if (!card.classList.contains('correct') && !card.classList.contains('incorrect')) {
                         this.tooltipManager.show(concept, card);
@@ -1052,18 +1053,29 @@ class AISafetyGame {
 
     handleCardClick(concept, cardElement, e) {
         if (cardElement.classList.contains('correct')) return;
-        if (isTouchDevice() && this.hintsEnabled && !this.selectedConcepts.includes(concept)) {
-            // If already 3 selected, allow single-tap to add the 4th (no tooltip required)
+
+        const isTouch = isTouchDevice() ||
+            (e && (e.pointerType === 'touch' || (e.touches && e.touches.length > 0)));
+
+        if (isTouch && this.hintsEnabled && !this.selectedConcepts.includes(concept)) {
             if (this.selectedConcepts.length === CONFIG.CONCEPTS_PER_GROUP - 1) {
+                this.tooltipManager.forceHide();
+                this.lastTappedForTooltip = null;
                 this.toggleConcept(concept, cardElement);
                 return;
             }
             if (this.lastTappedForTooltip === cardElement) {
+                const now = Date.now();
+                if (this._lastTooltipTapTime != null && (now - this._lastTooltipTapTime) < 300) {
+                    return;
+                }
                 this.lastTappedForTooltip = null;
+                this._lastTooltipTapTime = null;
                 this.tooltipManager.forceHide();
                 this.toggleConcept(concept, cardElement);
             } else {
                 this.lastTappedForTooltip = cardElement;
+                this._lastTooltipTapTime = Date.now();
                 this.tooltipManager.show(concept, cardElement);
                 this.tooltipManager.makeSticky();
                 return;
