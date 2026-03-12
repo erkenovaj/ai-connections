@@ -243,7 +243,7 @@ const UI_STRINGS = {
             title: { en: '🕹️ Gameplay', ru: '🕹️ Как играть' },
             body: {
                 en: '<ul><li><strong>Select 4 tiles</strong> that you think belong to the same category</li><li><strong>Click Submit</strong> to check if your grouping is correct</li><li><strong>You have 4 attempts</strong> - use them wisely!</li></ul>',
-                ru: '<ul><li><strong>Выберите 4 плитки</strong>, которые, по вашему мнению, относятся к одной категории</li><li><strong>Нажмите «Отправить»</strong>, чтобы проверить группировку</li><li><strong>У вас 4 попытки</strong> — используйте их с умом!</li></ul>'
+                ru: '<ul><li><strong>Выберите 4 плитки</strong>, которые, по вашему мнению, относятся к одной категории</li><li><strong>Нажмите «Проверить»</strong>, чтобы проверить группировку</li><li><strong>У вас 4 попытки</strong> — используйте их с умом!</li></ul>'
             }
         },
         {
