@@ -82,7 +82,6 @@ class TooltipManager {
     unstick() {
         this.isSticky = false;
         this.tooltip.classList.remove('sticky');
-        this.hide();
     }
 
     // Force hide tooltip (for game events)
