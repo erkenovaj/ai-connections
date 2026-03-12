@@ -242,22 +242,15 @@ const UI_STRINGS = {
         {
             title: { en: '🕹️ Gameplay', ru: '🕹️ Как играть' },
             body: {
-                en: '<ul><li><strong>Select 4 tiles</strong> that you think belong to the same category</li><li><strong>Click Submit</strong> to check if your grouping is correct</li><li><strong>Be careful!</strong> Many concepts can fit multiple categories</li><li><strong>You have 4 attempts</strong> - use them wisely!</li></ul>',
-                ru: '<ul><li><strong>Выберите 4 плитки</strong>, которые, по вашему мнению, относятся к одной категории</li><li><strong>Нажмите «Отправить»</strong>, чтобы проверить группировку</li><li><strong>Будьте внимательны!</strong> Многие понятия подходят к разным категориям</li><li><strong>У вас 4 попытки</strong> — используйте их с умом!</li></ul>'
-            }
-        },
-        {
-            title: { en: '🎨 Difficulty Levels', ru: '🎨 Уровни сложности' },
-            body: {
-                en: '<ul><li><span class="easy-badge">EASY</span> - More obvious connections</li><li><span class="medium-badge">MEDIUM</span> - Requires some AI safety knowledge</li><li><span class="hard-badge">HARD</span> - Subtle philosophical connections</li><li><span class="harder-badge">HARDER</span> - (Normal mode) Most challenging</li></ul>',
-                ru: '<ul><li><span class="easy-badge">EASY</span> — более очевидные связи</li><li><span class="medium-badge">MEDIUM</span> — нужны базовые знания по безопасности ИИ</li><li><span class="hard-badge">HARD</span> — тонкие философские связи</li><li><span class="harder-badge">HARDER</span> — (обычный режим) самый сложный</li></ul>'
+                en: '<ul><li><strong>Select 4 tiles</strong> that you think belong to the same category</li><li><strong>Click Submit</strong> to check if your grouping is correct</li><li><strong>You have 4 attempts</strong> - use them wisely!</li></ul>',
+                ru: '<ul><li><strong>Выберите 4 плитки</strong>, которые, по вашему мнению, относятся к одной категории</li><li><strong>Нажмите «Отправить»</strong>, чтобы проверить группировку</li><li><strong>У вас 4 попытки</strong> — используйте их с умом!</li></ul>'
             }
         },
         {
             title: { en: '⏱️ Timer &amp; Score', ru: '⏱️ Таймер и очки' },
             body: {
-                en: '<ul><li>The <strong>timer</strong> runs from the start of each game until you win or lose.</li><li><strong>Score</strong> is based on correct categories, mistakes, and time. Higher is better!</li><li>Save your name when you win to appear on the <strong>Leaderboard</strong> (saved online when the server is running).</li></ul>',
-                ru: '<ul><li><strong>Таймер</strong> идёт с начала игры до победы или поражения.</li><li><strong>Очки</strong> зависят от угаданных категорий, ошибок и времени. Чем больше — тем лучше!</li><li>Введите имя при победе, чтобы попасть в <strong>таблицу лидеров</strong> (сохраняется онлайн при работающем сервере).</li></ul>'
+                en: '<ul><li>The <strong>timer</strong> runs from the start of each game until you win or lose.</li><li><strong>Score</strong> is based on correct categories, mistakes, and time. Higher is better!</li><li>Save your name when you win to appear on the <strong>Leaderboard</strong>.</li></ul>',
+                ru: '<ul><li><strong>Таймер</strong> идёт с начала игры до победы или поражения.</li><li><strong>Очки</strong> зависят от угаданных категорий, ошибок и времени. Чем больше — тем лучше!</li><li>Введите имя при победе, чтобы попасть в <strong>таблицу лидеров</strong>.</li></ul>'
             }
         },
         {
@@ -277,8 +270,8 @@ const UI_STRINGS = {
         {
             title: { en: '💡 Tips', ru: '💡 Советы' },
             body: {
-                en: '<ul><li>Hover (or tap on mobile) over concepts to see their definitions</li><li>Use the Dictionary for quick reference</li><li>Look for both technical and thematic connections</li><li>Some concepts might fit multiple plausible groups</li><li>Think about both the meaning and context of each term</li></ul>',
-                ru: '<ul><li>Наведите курсор (или нажмите на мобильном) на понятие, чтобы увидеть определение</li><li>Словарь — для быстрой справки</li><li>Ищите и технические, и тематические связи</li><li>Некоторые понятия могут подходить к разным группам</li><li>Учитывайте и значение, и контекст каждого термина</li></ul>'
+                en: '<ul><li>Hover (or tap on mobile) over concepts to see their definitions</li><li>Use the Dictionary for quick reference</li><li>Look for both technical and thematic connections</li><li>Think about both the meaning and context of each term</li></ul>',
+                ru: '<ul><li>Наведите курсор (или нажмите на мобильном) на понятие, чтобы увидеть определение</li><li>Словарь — для быстрой справки</li><li>Ищите и технические, и тематические связи</li><li>Учитывайте и значение, и контекст каждого термина</li></ul>'
             }
         }
     ]
@@ -455,6 +448,8 @@ class AISafetyGame {
         if (urlConfig.mode !== null) this.gameMode = urlConfig.mode;
         this.bindEvents();
         this.applyLanguage();
+        // Warm up the backend / database so creating a room feels faster.
+        this.prewarmBackend();
         this.updateDictionaryEntries();
         this.updateHintsToggle();
         this.updateHintButton();
@@ -472,6 +467,19 @@ class AISafetyGame {
             return;
         }
         this.showWelcome();
+    }
+
+    prewarmBackend() {
+        if (this._backendPrewarmed) return;
+        this._backendPrewarmed = true;
+        try {
+            if (api && api.getSoloLeaderboard) {
+                // Fire-and-forget; this is just to wake the server and DB.
+                api.getSoloLeaderboard(this.getEffectiveMode(), 1).catch(() => {});
+            }
+        } catch (_) {
+            // Ignore any errors from prewarm.
+        }
     }
 
     showWelcome() {

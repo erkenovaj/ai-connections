@@ -618,8 +618,8 @@ body {
     margin-bottom: 8px;
 }
 
-/* Mobile: keep 4×4 grid like Connections, compact tiles */
-@media (max-width: 600px) {
+/* Mobile / tablet: keep 4×4 grid like Connections, compact tiles */
+@media (max-width: 900px) {
     .container {
         padding: 10px;
     }
@@ -721,8 +721,8 @@ body {
     }
 }
 
-/* Phone layout for in-game controls and categories */
-@media (max-width: 600px) {
+/* Phone / tablet layout for in-game controls and categories */
+@media (max-width: 900px) {
     /* Submit / deselect / new-game in a row under the tiles */
     .game-main {
         flex-direction: column;
