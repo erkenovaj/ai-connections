@@ -9,6 +9,7 @@ class TooltipManager {
         this.tooltip = document.getElementById('concept-tooltip');
         this.currentConcept = null;
         this.isSticky = false;
+        this.hideTimer = null;
         this.init();
     }
 
@@ -77,8 +78,18 @@ class TooltipManager {
     }
 
     hide() {
-        if (!this.isSticky) {
-            this.tooltip.classList.remove('show');
+        if (this.isSticky) return;
+        if (isTouchEnv()) {
+            // On touch, delay hide slightly so tap-up or minor moves
+            // don't immediately close the tooltip.
+            if (this.hideTimer) clearTimeout(this.hideTimer);
+            this.hideTimer = setTimeout(() => {
+                if (this.isSticky) return;
+                this.tooltip.classList.remove('show', 'sticky');
+                this.currentConcept = null;
+            }, 10000);
+        } else {
+            this.tooltip.classList.remove('show', 'sticky');
             this.currentConcept = null;
         }
     }
@@ -96,6 +107,10 @@ class TooltipManager {
     // Force hide tooltip (for game events)
     forceHide() {
         this.isSticky = false;
+        if (this.hideTimer) {
+            clearTimeout(this.hideTimer);
+            this.hideTimer = null;
+        }
         this.tooltip.classList.remove('show', 'sticky');
         this.currentConcept = null;
     }
