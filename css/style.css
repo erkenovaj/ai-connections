@@ -761,12 +761,14 @@ body {
 
 /* FINAL mobile layout overrides (ensure these win by placing at end) */
 @media (max-width: 900px) {
-    /* Landing page: make card a simple vertical stack */
+    /* Landing page: make card a simple vertical stack and full-width */
     .welcome-card {
         display: flex;
         flex-direction: column;
         gap: 16px;
         padding: 20px;
+        max-width: 100%;
+        width: 100%;
     }
 
     /* Order: header/desc (default), then link box, then mode + solo/room */
