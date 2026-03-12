@@ -1,5 +1,9 @@
 import { CONCEPT_DEFINITIONS } from './config.js';
 
+function isTouchEnv() {
+    return typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+}
+
 class TooltipManager {
     constructor() {
         this.tooltip = document.getElementById('concept-tooltip');
@@ -33,6 +37,11 @@ class TooltipManager {
         this.positionTooltip(element);
         this.tooltip.classList.add('show');
         this.currentConcept = concept;
+        // On touch devices, keep tooltip visible until explicitly hidden
+        if (isTouchEnv()) {
+            this.isSticky = true;
+            this.tooltip.classList.add('sticky');
+        }
     }
 
     positionTooltip(element) {
