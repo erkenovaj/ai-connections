@@ -759,6 +759,42 @@ body {
     }
 }
 
+/* FINAL mobile layout overrides (ensure these win by placing at end) */
+@media (max-width: 900px) {
+    /* Landing page: stack left/right, link box between header and mode/room */
+    .welcome-card {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 20px;
+    }
+
+    .welcome-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .welcome-left,
+    .welcome-right {
+        width: 100%;
+        flex: none;
+    }
+
+    .welcome-settings {
+        width: 100%;
+    }
+
+    /* Order inside card: header/desc (default), then link box, then mode+solo/room */
+    .welcome-card > .welcome-layout {
+        order: 2;
+    }
+
+    .welcome-card > .welcome-join {
+        order: 1;
+    }
+}
+
 /* Welcome screen */
 .welcome-screen {
     min-height: 100vh;
