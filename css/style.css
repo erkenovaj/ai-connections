@@ -761,7 +761,7 @@ body {
 
 /* FINAL mobile layout overrides (ensure these win by placing at end) */
 @media (max-width: 900px) {
-    /* Landing page: stack left/right, link box between header and mode/room */
+    /* Landing page: make card a simple vertical stack */
     .welcome-card {
         display: flex;
         flex-direction: column;
@@ -769,29 +769,25 @@ body {
         padding: 20px;
     }
 
-    .welcome-layout {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
+    /* Order: header/desc (default), then link box, then mode + solo/room */
+    .welcome-card > .welcome-join {
+        order: 1;
     }
 
-    .welcome-left,
-    .welcome-right {
-        width: 100%;
-        flex: none;
-    }
-
-    .welcome-settings {
-        width: 100%;
-    }
-
-    /* Order inside card: header/desc (default), then link box, then mode+solo/room */
     .welcome-card > .welcome-layout {
         order: 2;
     }
 
-    .welcome-card > .welcome-join {
-        order: 1;
+    /* On phones: stack mode and solo/room vertically, full-width */
+    .welcome-layout {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .welcome-left,
+    .welcome-right {
+        flex: none;
+        width: 100%;
     }
 }
 
@@ -831,6 +827,7 @@ body {
     text-align: center;
 }
 
+/* Landing page main layout (desktop): mode on the left, solo/room on the right */
 .welcome-layout {
     display: flex;
     flex-direction: row;
