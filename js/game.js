@@ -1036,8 +1036,9 @@ class AISafetyGame {
                 card.classList.add('correct');
             }
 
-            // Hover tooltips only on non-touch devices. On touch, tooltip is shown by first tap in handleCardClick.
-            if (this.hintsEnabled && !isTouchDevice()) {
+            // Hover tooltips when hints are enabled. On touch devices, hide() is a no-op,
+            // so the tooltip will not immediately disappear on tap.
+            if (this.hintsEnabled) {
                 card.addEventListener('mouseenter', () => {
                     if (!card.classList.contains('correct') && !card.classList.contains('incorrect')) {
                         this.tooltipManager.show(concept, card);
