@@ -231,6 +231,10 @@ const UI_STRINGS = {
         en: 'Category %d',
         ru: 'Категория %d'
     },
+    loadingText: {
+        en: 'Loading…',
+        ru: 'Загрузка…'
+    },
     guideSections: [
         {
             title: { en: '🎯 Objective', ru: '🎯 Цель' },
@@ -444,6 +448,16 @@ class AISafetyGame {
         });
     }
 
+    showLoading() {
+        const el = document.getElementById('app-loading');
+        if (el) el.classList.add('visible');
+    }
+
+    hideLoading() {
+        const el = document.getElementById('app-loading');
+        if (el) el.classList.remove('visible');
+    }
+
     init() {
         const urlConfig = parseUrlConfig();
         if (urlConfig.mode !== null) this.gameMode = urlConfig.mode;
@@ -460,9 +474,12 @@ class AISafetyGame {
         this.updateScoreDisplay(null);
 
         if (urlConfig.roomId) {
+            this.showLoading();
             api.getRoom(urlConfig.roomId).then((data) => {
+                this.hideLoading();
                 this.showGameWithRoom(data);
             }).catch(() => {
+                this.hideLoading();
                 this.showWelcome();
             });
             return;
@@ -601,14 +618,16 @@ class AISafetyGame {
         }
         const rounds = Math.max(1, Math.min(10, parseInt(roundsInput.value, 10) || 1));
         const templates = this.customTemplates;
+        this.showLoading();
         api.createRoom(mode, rounds, templates).then((data) => {
-            // Store creator-specific settings keyed by room ID for this browser
+            this.hideLoading();
             sessionStorage.setItem(`room_rounds_${data.roomId}`, String(rounds));
             if (templates) {
                 sessionStorage.setItem(`room_templates_${data.roomId}`, JSON.stringify(templates));
             }
             window.location.search = '?room=' + data.roomId;
         }).catch((err) => {
+            this.hideLoading();
             alert('Could not create room. Is the server running? ' + (err.message || ''));
         });
     }
@@ -638,7 +657,11 @@ class AISafetyGame {
         this.updateHeaderDesc();
         this.updateRoundDisplay();
         if (!localStorage.getItem(GUIDE_SEEN_KEY)) setTimeout(() => this.showGuide(), 100);
-        this.startNewGame();
+        this.showLoading();
+        requestAnimationFrame(() => {
+            this.startNewGame();
+            this.hideLoading();
+        });
     }
 
     showGameWithRoom(roomData) {
@@ -706,7 +729,11 @@ class AISafetyGame {
             this.playerName = (input.value && input.value.trim()) || 'Anonymous';
             modal.style.display = 'none';
             if (!localStorage.getItem(GUIDE_SEEN_KEY)) setTimeout(() => this.showGuide(), 100);
-            this.startNewGame();
+            this.showLoading();
+            requestAnimationFrame(() => {
+                this.startNewGame();
+                this.hideLoading();
+            });
         };
         startBtn.onclick = start;
         input.onkeydown = (e) => { if (e.key === 'Enter') start(); };
@@ -1809,6 +1836,9 @@ class AISafetyGame {
         if (lbTitle) lbTitle.textContent = UI_STRINGS.leaderboardTitle[lang];
         const lbClose = document.getElementById('leaderboard-close-btn');
         if (lbClose) lbClose.textContent = UI_STRINGS.leaderboardClose[lang];
+
+        const loadingTextEl = document.querySelector('.app-loading-text');
+        if (loadingTextEl) loadingTextEl.textContent = UI_STRINGS.loadingText[lang];
 
         // Lobby bar (puzzle page)
         const copyBtn = document.getElementById('lobby-copy-btn');
