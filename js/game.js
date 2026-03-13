@@ -409,6 +409,7 @@ class AISafetyGame {
      */
     translateCurrentGameToLanguage(oldLang, newLang) {
         if (!this.currentPuzzle) return;
+        this.tooltipManager.forceHide();
         const { oldToNew, oldTagToNewTag } = this.buildLanguageMaps(oldLang, newLang);
         const mapConcept = (c) => oldToNew.get(c) ?? c;
         const mapTag = (t) => oldTagToNewTag.get(t) ?? t;
