@@ -11,6 +11,7 @@ export default async function handler(req, res) {
       sql: 'SELECT player_name AS playerName, score, time_seconds AS timeSeconds, mode, created_at AS createdAt FROM solo_results WHERE mode = ? ORDER BY score DESC, time_seconds ASC LIMIT ?',
       args: [mode, limit],
     });
+    res.setHeader('Cache-Control', 'public, max-age=15, s-maxage=15, stale-while-revalidate=60');
     res.status(200).json(result.rows);
   } catch (e) {
     res.status(500).json({ error: String(e.message) });

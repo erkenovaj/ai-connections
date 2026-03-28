@@ -325,6 +325,8 @@ class AISafetyGame {
         this.totalRounds = 1;
         this.dictionaryEntries = [];
         this.language = localStorage.getItem(LANG_STORAGE_KEY) || 'en';
+        this._savingWinResult = false;
+        this._savingRoundResult = false;
         this.init();
     }
 
@@ -1436,10 +1438,15 @@ class AISafetyGame {
     }
 
     async closeWinAndSave() {
+        if (this.regime === 'solo' && this._savingWinResult) return;
         const nameInput = document.getElementById('player-name');
         const baseName = (nameInput && nameInput.value && nameInput.value.trim()) || 'Anonymous';
         const name = this.regime === 'lobby' ? (this.playerName || baseName) : baseName;
-        const isMultiRoundFinal = this.regime === 'lobby' && this.totalRounds && this.totalRounds > 1 && this.currentRound >= this.totalRounds;
+        const saveBtn = document.getElementById('win-save-btn');
+        if (this.regime === 'solo') {
+            this._savingWinResult = true;
+            if (saveBtn) saveBtn.disabled = true;
+        }
         try {
             if (this.regime === 'lobby') {
                 const nameWithRound = `${name} (R${this.currentRound})`;
@@ -1451,17 +1458,21 @@ class AISafetyGame {
                     roundNumber: this.currentRound
                 });
             } else {
-                await api.submitSoloResult({
-                    playerName: name,
-                    score: this.currentScore,
-                    timeSeconds: this.elapsedSeconds,
-                    mode: this.gameMode
-                });
-                this.addToLeaderboard(name, this.currentScore, this.elapsedSeconds, this.gameMode);
+                try {
+                    await api.submitSoloResult({
+                        playerName: name,
+                        score: this.currentScore,
+                        timeSeconds: this.elapsedSeconds,
+                        mode: this.gameMode
+                    });
+                } catch (e) {
+                    this.saveSoloLeaderboardLocalFallback(name, this.currentScore, this.elapsedSeconds, this.gameMode);
+                }
             }
-        } catch (e) {
+        } finally {
             if (this.regime === 'solo') {
-                this.addToLeaderboard(name, this.currentScore, this.elapsedSeconds, this.gameMode);
+                this._savingWinResult = false;
+                if (saveBtn) saveBtn.disabled = false;
             }
         }
         document.getElementById('win-modal').style.display = 'none';
@@ -1470,6 +1481,10 @@ class AISafetyGame {
     }
 
     async nextRound() {
+        if (this._savingRoundResult) return;
+        this._savingRoundResult = true;
+        const nextBtn = document.getElementById('win-next-btn');
+        if (nextBtn) nextBtn.disabled = true;
         const name = this.playerName || 'Anonymous';
         const nameWithRound = `${name} (R${this.currentRound})`;
         try {
@@ -1482,6 +1497,9 @@ class AISafetyGame {
             });
         } catch (e) {
             console.error('Failed to submit round result:', e);
+        } finally {
+            this._savingRoundResult = false;
+            if (nextBtn) nextBtn.disabled = false;
         }
         if (this.currentRound < this.totalRounds) {
             // Advance to next round and start a new puzzle.
@@ -1524,18 +1542,24 @@ class AISafetyGame {
         }
     }
 
-    addToLeaderboard(name, score, timeSeconds, mode) {
-        let list = this.getLeaderboard();
-        list.push({
-            name: name.substring(0, 20),
-            score,
-            time: timeSeconds,
-            mode,
-            date: new Date().toISOString()
-        });
-        list.sort((a, b) => b.score - a.score);
-        list = list.slice(0, MAX_LEADERBOARD_ENTRIES);
-        localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(list));
+    /** Offline-only cache when POST /api/solo/result fails (never call async getLeaderboard() here). */
+    saveSoloLeaderboardLocalFallback(name, score, timeSeconds, mode) {
+        try {
+            let list = [];
+            const raw = localStorage.getItem(LEADERBOARD_KEY);
+            if (raw) list = JSON.parse(raw);
+            if (!Array.isArray(list)) list = [];
+            list.push({
+                name: name.substring(0, 20),
+                score,
+                time: timeSeconds,
+                mode,
+                date: new Date().toISOString()
+            });
+            list.sort((a, b) => b.score - a.score);
+            list = list.slice(0, MAX_LEADERBOARD_ENTRIES);
+            localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(list));
+        } catch (_) {}
     }
 
     saveResult(won) {
