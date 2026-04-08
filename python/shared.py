@@ -86,6 +86,7 @@ def build_indices(
 
 def _build_game_structure(
     category_assignments: List[Tuple[str, str, List[str]]],
+    extra_board_items: Optional[List[str]] = None,
 ) -> Dict[str, object]:
     """
     Build the final game dict from sampled assignments.
@@ -93,24 +94,24 @@ def _build_game_structure(
     Args:
         category_assignments: list of tuples
             (difficulty_key, category_name, members_list_of_4)
+        extra_board_items: optional list of additional items to place on
+            the board (e.g. decoys in advanced mode). These items are NOT
+            part of any category in the solution.
 
     Returns:
         Game dict compatible with the JS code:
         {
-            "board": [16 items],
-            "categories": {
-                "easy":   { "name": ..., "members": [...], "difficulty": "easy" },
-                "medium": { ... },
-                "hard":   { ... },
-                "harder": { ... },
-            },
-            "numCategories": 4,
+            "board": [N items],
+            "categories": { difficulty: { name, members, difficulty }, ... },
+            "numCategories": <number of categories>,
         }
     """
-    # Flatten members for the board and shuffle
     board: List[str] = []
     for _, _, members in category_assignments:
         board.extend(members)
+
+    if extra_board_items:
+        board.extend(extra_board_items)
 
     random.shuffle(board)
 
@@ -125,7 +126,7 @@ def _build_game_structure(
     return {
         "board": board,
         "categories": categories_obj,
-        "numCategories": 4,
+        "numCategories": len(category_assignments),
     }
 
 

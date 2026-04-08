@@ -52,31 +52,29 @@ async function loadPyodideOnce() {
 }
 
 /**
- * Try to sample a puzzle using the Python sampler.
+ * Try to sample a puzzle using the Python V2 sampler.
  *
- * @param {'1'|'2'} version - '1' for disjoint categories, '2' for private categories.
+ * @param {'normal'|'advanced'} mode - Game mode. Normal = 4 categories,
+ *     advanced = 3 categories + 4 red-herring decoys.
  * @param {Array} categoryTemplates - Parsed JSON from configs/category-templates.json.
  * @returns {Promise<object|null>} - Game object on success, or null on failure.
  */
-export async function trySampleWithPython(version, categoryTemplates) {
+export async function trySampleWithPython(mode, categoryTemplates) {
     const pyodide = await loadPyodideOnce();
     if (!pyodide) return null;
 
     try {
         const pyConfig = pyodide.toPy(categoryTemplates);
         const code = `
-from python.game_sampler import sample_game_v1
 from python.game_sampler_v2 import sample_game_v2
 
-def _run_sampler(version, config):
-    if version == "1":
-        return sample_game_v1(config)
-    else:
-        return sample_game_v2(config)
+def _run_sampler(mode, config):
+    num_categories = 4 if mode == "normal" else 3
+    return sample_game_v2(config, num_categories=num_categories)
 `;
         await pyodide.runPythonAsync(code);
         const runFunc = pyodide.globals.get('_run_sampler');
-        const result = runFunc(version, pyConfig);
+        const result = runFunc(mode, pyConfig);
         const game = pyodide.toJs(result);
         return game ?? null;
     } catch (err) {

@@ -3,11 +3,17 @@ Small CLI to exercise the Python samplers locally.
 
 Usage examples:
 
-    # Use Version 1 with default config path
+    # Normal mode (4 categories) with V2 sampler
+    python -m python.run_sampler --mode normal
+
+    # Advanced mode (3 categories + 4 decoys)
+    python -m python.run_sampler --mode advanced
+
+    # V1 sampler (disjoint categories, normal only)
     python -m python.run_sampler --version 1
 
-    # Use Version 2 with explicit config path
-    python -m python.run_sampler --version 2 --config configs/category-templates.json
+    # Custom config path
+    python -m python.run_sampler --mode normal --config configs/category-templates.json
 """
 
 from __future__ import annotations
@@ -16,7 +22,7 @@ import argparse
 import json
 import os
 import random
-from typing import Any, Dict
+import sys
 
 from .game_sampler import sample_game_v1
 from .game_sampler_v2 import sample_game_v2
@@ -28,8 +34,15 @@ def main() -> None:
         "--version",
         "-v",
         choices=["1", "2"],
-        default="1",
-        help="Sampler version to use (1 = disjoint, 2 = private categories).",
+        default="2",
+        help="Sampler version (1 = disjoint seeds, 2 = private categories). Default: 2.",
+    )
+    parser.add_argument(
+        "--mode",
+        "-m",
+        choices=["normal", "advanced"],
+        default="normal",
+        help="Game mode: normal = 4 categories, advanced = 3 categories + 4 decoys.",
     )
     parser.add_argument(
         "--config",
@@ -52,26 +65,27 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    if args.seed is not None:
-        rng = random.Random(args.seed)
-    else:
-        rng = random.Random()
+    rng = random.Random(args.seed) if args.seed is not None else random.Random()
 
-    # Resolve config path relative to current working directory.
     config_path = os.path.abspath(args.config)
     with open(config_path, "r", encoding="utf-8") as f:
         config = json.load(f)
 
+    num_categories = 4 if args.mode == "normal" else 3
+
     if args.version == "1":
+        if num_categories != 4:
+            raise SystemExit("V1 sampler only supports normal mode (4 categories).")
         game = sample_game_v1(config, rng=rng, max_retries=args.max_retries)
     else:
-        game = sample_game_v2(config, rng=rng, max_retries=args.max_retries)
+        game = sample_game_v2(
+            config, num_categories=num_categories,
+            rng=rng, max_retries=args.max_retries,
+        )
 
     if game is None:
         raise SystemExit("Failed to sample a valid game within the retry limit.")
 
-    # Pretty-print JSON result to stdout
-    import sys
     json.dump(game, sys.stdout, ensure_ascii=False, indent=2)
     sys.stdout.write("\n")
 

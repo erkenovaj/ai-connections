@@ -163,15 +163,15 @@ class AISafetyGame {
     }
 
     async loadPuzzle() {
-        // Try Python sampler first (Version 1 for now).
+        // Try Python V2 sampler first; pass game mode so advanced mode
+        // gets 3 categories + 4 red-herring decoys.
         try {
             const response = await fetch('./configs/category-templates.json');
             const templates = await response.json();
-            const pythonPuzzle = await trySampleWithPython('1', templates);
+            const pythonPuzzle = await trySampleWithPython(this.gameMode, templates);
             if (pythonPuzzle && pythonPuzzle.board && pythonPuzzle.categories) {
                 this.currentPuzzle = pythonPuzzle;
             } else {
-                // Fallback to existing JS generator.
                 this.currentPuzzle = PuzzleGenerator.generatePuzzle(this.gameMode);
             }
         } catch {
