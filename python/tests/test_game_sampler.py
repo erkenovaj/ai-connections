@@ -24,7 +24,7 @@ from python.game_sampler_v2 import sample_game_v2
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(os.path.dirname(HERE))
-CATEGORY_TEMPLATES_PATH = os.path.join(REPO_ROOT, "configs", "category-templates.json")
+CATEGORY_TEMPLATES_PATH = os.path.join(REPO_ROOT, "configs", "category-templates-new.json")
 
 
 def _load_config():
@@ -35,7 +35,7 @@ def _load_config():
 class BaseSamplerTest(unittest.TestCase):
     """Shared assertions for both samplers."""
 
-    def assert_valid_game_structure(self, game):
+    def assert_valid_game_structure(self, game, expected_num_categories=4):
         # Basic shape
         self.assertIsInstance(game, dict)
         self.assertIn("board", game)
@@ -50,9 +50,12 @@ class BaseSamplerTest(unittest.TestCase):
         self.assertEqual(len(board), 16)
         self.assertEqual(len(set(board)), 16)
 
-        # Four categories with expected difficulty labels
-        self.assertEqual(num, 4)
-        expected_diffs = {"easy", "medium", "hard", "harder"}
+        # Category count and expected difficulty labels
+        self.assertEqual(num, expected_num_categories)
+        if expected_num_categories == 4:
+            expected_diffs = {"easy", "medium", "hard", "harder"}
+        else:
+            expected_diffs = {"easy", "medium", "hard"}
         self.assertEqual(set(cats.keys()), expected_diffs)
 
         all_members = []
@@ -65,8 +68,11 @@ class BaseSamplerTest(unittest.TestCase):
             self.assertEqual(len(members), 4)
             all_members.extend(members)
 
-        # Board must match exactly the set of all solution members
-        self.assertEqual(set(board), set(all_members))
+        # Solution members must be on the board.
+        self.assertTrue(set(all_members).issubset(set(board)))
+
+        # Board is always 16 tiles.
+        self.assertEqual(len(board), 16)
 
 
 class TestGameSamplerV1(BaseSamplerTest):
@@ -85,6 +91,13 @@ class TestGameSamplerV2(BaseSamplerTest):
         game = sample_game_v2(cfg, rng=rng, max_retries=200)
         self.assertIsNotNone(game)
         self.assert_valid_game_structure(game)
+
+    def test_sample_game_v2_advanced_produces_valid_game(self):
+        cfg = _load_config()
+        rng = random.Random(123)
+        game = sample_game_v2(cfg, num_categories=3, rng=rng, max_retries=200)
+        self.assertIsNotNone(game)
+        self.assert_valid_game_structure(game, expected_num_categories=3)
 
 
 if __name__ == "__main__":

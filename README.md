@@ -89,7 +89,7 @@ For local testing, run `npm start` (or `vercel dev`) with a `.env.local` contain
 GitHub Pages serves the app as **static files only**. Lobby (rooms) and online leaderboard require the API backend (e.g. deploy to Vercel with Turso, or run `vercel dev` locally).
 
 **Option A – Deploy from a branch (simplest)**  
-1. Push this repo to GitHub (include `configs/category-templates.json` so puzzles load correctly).  
+1. Push this repo to GitHub (include `configs/category-templates-new.json` so puzzles load correctly).  
 2. Open **Settings → Pages**.  
 3. Under **Source**, choose **Deploy from a branch**.  
 4. Branch: **main** (or **master**), Folder: **/ (root)**.  
@@ -143,7 +143,7 @@ ai-safety-connections/
 │   ├── sounds.js       # Web Audio sound effects
 │   └── config.js       # Game configuration and data
 ├── configs/
-│   └── category-templates.json # Category definitions
+│   └── category-templates-new.json # Item definitions with tags
 ├── images/
 │   ├── favicon.svg     # Site icon
 │   ├── happy_dog.png   # Happy dog image

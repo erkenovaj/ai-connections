@@ -4,7 +4,7 @@ Shared helpers for sampling valid Connections-style games from a config file.
 This module is intentionally dependency-free (std lib only) so it runs under
 Pyodide / WebAssembly in the browser.
 
-Config format (matches configs/category-templates.json):
+Config format (matches configs/category-templates-new.json):
 - List of item dicts with keys:
     - "name": item name (string)
     - "description": human-readable description (string, optional)

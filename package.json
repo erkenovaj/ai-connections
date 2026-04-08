@@ -4,13 +4,10 @@
   "description": "AI Safety Connections web game with solo and lobby multiplayer",
   "type": "module",
   "scripts": {
-    "start": "vercel dev",
-    "dev": "vercel dev"
+    "start": "npx vercel dev",
+    "dev": "npx vercel dev"
   },
   "dependencies": {
     "@libsql/client": "^0.14.0"
-  },
-  "devDependencies": {
-    "vercel": "^38.0.0"
   }
 }

@@ -1,4 +1,3 @@
-import PuzzleGenerator from './puzzle-generator.js';
 import { trySampleWithPython } from './python-sampler-bridge.js';
 import TooltipManager from './tooltip.js';
 import DogAnimations from './dog-animations.js';
@@ -661,9 +660,12 @@ class AISafetyGame {
         this.updateRoundDisplay();
         if (!localStorage.getItem(GUIDE_SEEN_KEY)) setTimeout(() => this.showGuide(), 100);
         this.showLoading();
-        requestAnimationFrame(() => {
-            this.startNewGame();
-            this.hideLoading();
+        requestAnimationFrame(async () => {
+            try {
+                await this.startNewGame();
+            } finally {
+                this.hideLoading();
+            }
         });
     }
 
@@ -733,9 +735,12 @@ class AISafetyGame {
             modal.style.display = 'none';
             if (!localStorage.getItem(GUIDE_SEEN_KEY)) setTimeout(() => this.showGuide(), 100);
             this.showLoading();
-            requestAnimationFrame(() => {
-                this.startNewGame();
-                this.hideLoading();
+            requestAnimationFrame(async () => {
+                try {
+                    await this.startNewGame();
+                } finally {
+                    this.hideLoading();
+                }
             });
         };
         startBtn.onclick = start;
@@ -950,7 +955,7 @@ class AISafetyGame {
         });
     }
 
-    startNewGame() {
+    async startNewGame() {
         this.closeAllModals();
         this.stopTimer();
         this.timerStart = Date.now();
@@ -964,7 +969,39 @@ class AISafetyGame {
         const seed = this.regime === 'lobby' ? this.puzzleSeed : null;
         const lang = this.getActiveLanguageCode();
         const templates = this.getTemplatesForLanguage(lang);
-        this.currentPuzzle = PuzzleGenerator.generatePuzzle(this.getEffectiveMode(), seed, templates);
+        // Python sampler is the only allowed puzzle source.
+        // Retry a few times to tolerate transient Pyodide init/loading timing.
+        let pythonPuzzle = null;
+        let lastError = null;
+        for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+                pythonPuzzle = await trySampleWithPython(this.getEffectiveMode(), templates, seed);
+                if (
+                    pythonPuzzle &&
+                    Array.isArray(pythonPuzzle.board) &&
+                    pythonPuzzle.board.length === 16 &&
+                    pythonPuzzle.categories &&
+                    typeof pythonPuzzle.categories === 'object'
+                ) {
+                    break;
+                }
+            } catch (err) {
+                lastError = err;
+            }
+            // Small delay before retry.
+            await new Promise(resolve => setTimeout(resolve, 120));
+        }
+
+        if (!pythonPuzzle || !Array.isArray(pythonPuzzle.board) || pythonPuzzle.board.length !== 16) {
+            const bridgeError = (typeof window !== 'undefined' && window.__pySamplerLastError)
+                ? `\nDetails: ${window.__pySamplerLastError}`
+                : '';
+            console.error('Python sampler failed to produce a valid puzzle.', lastError, bridgeError);
+            alert(`Could not generate puzzle from Python sampler. Please reload the page and try again.${bridgeError}`);
+            return;
+        }
+
+        this.currentPuzzle = pythonPuzzle;
         this.updateDictionaryEntries();
         this.selectedConcepts = [];
         this.mistakes = 0;

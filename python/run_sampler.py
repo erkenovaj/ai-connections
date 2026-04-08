@@ -13,7 +13,7 @@ Usage examples:
     python -m python.run_sampler --version 1
 
     # Custom config path
-    python -m python.run_sampler --mode normal --config configs/category-templates.json
+    python -m python.run_sampler --mode normal --config configs/category-templates-new.json
 """
 
 from __future__ import annotations
@@ -47,8 +47,8 @@ def main() -> None:
     parser.add_argument(
         "--config",
         "-c",
-        default="configs/category-templates.json",
-        help="Path to category-templates.json (relative to repo root).",
+        default="configs/category-templates-new.json",
+        help="Path to category-templates-new.json (relative to repo root).",
     )
     parser.add_argument(
         "--seed",
