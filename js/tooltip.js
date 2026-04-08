@@ -1,5 +1,9 @@
 import { CONCEPT_DEFINITIONS } from './config.js';
 
+function isTouchEnv() {
+    return typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+}
+
 class TooltipManager {
     constructor() {
         this.tooltip = document.getElementById('concept-tooltip');
@@ -33,22 +37,39 @@ class TooltipManager {
         this.positionTooltip(element);
         this.tooltip.classList.add('show');
         this.currentConcept = concept;
+        // On touch devices, keep tooltip visible until explicitly hidden
+        if (isTouchEnv()) {
+            this.isSticky = true;
+            this.tooltip.classList.add('sticky');
+        }
     }
 
     positionTooltip(element) {
         const rect = element.getBoundingClientRect();
+
+        // Temporarily show tooltip off-screen to measure its size accurately
+        this.tooltip.style.left = '-9999px';
+        this.tooltip.style.top = '-9999px';
+        this.tooltip.classList.add('show');
         const tooltipRect = this.tooltip.getBoundingClientRect();
-        
-        // Calculate position - try to place tooltip near the cursor without overlapping
-        let left = rect.left + (rect.width / 2) - 150; // Center horizontally
-        let top = rect.top - tooltipRect.height - 10; // Position above the tile
-        
-        // Adjust if tooltip would go off screen
-        if (left < 10) left = 10;
-        if (left + 300 > window.innerWidth) left = window.innerWidth - 310;
-        if (top < 10) {
-            // If too high, position below the tile instead
-            top = rect.bottom + 10;
+
+        const scrollX = window.scrollX || window.pageXOffset || 0;
+        const scrollY = window.scrollY || window.pageYOffset || 0;
+
+        // Center horizontally above the target cell
+        let left = rect.left + scrollX + (rect.width / 2) - (tooltipRect.width / 2);
+        let top = rect.top + scrollY - tooltipRect.height - 8;
+
+        // Clamp horizontally within viewport
+        const margin = 10;
+        if (left < margin) left = margin;
+        if (left + tooltipRect.width > scrollX + window.innerWidth - margin) {
+            left = scrollX + window.innerWidth - margin - tooltipRect.width;
+        }
+
+        // If there isn't enough space above, place directly below the cell
+        if (top < scrollY + margin) {
+            top = rect.bottom + scrollY + 8;
         }
 
         this.tooltip.style.left = left + 'px';
@@ -56,10 +77,12 @@ class TooltipManager {
     }
 
     hide() {
-        if (!this.isSticky) {
-            this.tooltip.classList.remove('show');
-            this.currentConcept = null;
+        if (isTouchEnv()) {
+            return;
         }
+        if (this.isSticky) return;
+        this.tooltip.classList.remove('show', 'sticky');
+        this.currentConcept = null;
     }
 
     makeSticky() {
@@ -68,9 +91,9 @@ class TooltipManager {
     }
 
     unstick() {
+        if (isTouchEnv()) return;
         this.isSticky = false;
         this.tooltip.classList.remove('sticky');
-        this.hide();
     }
 
     // Force hide tooltip (for game events)

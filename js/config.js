@@ -8,68 +8,34 @@ const CONFIG = {
     TOOLTIP_DELAY: 300
 };
 
-// Concept definitions and category templates are now derived from the JSON config.
-// They are kept mutable so that we can populate them once at module load time.
-let CONCEPT_DEFINITIONS = {};
+// Concept definitions: populated from category-templates-new.json (and any custom templates)
+const CONCEPT_DEFINITIONS = {};
+
+// Category templates for puzzle generation - flat list of term entries
+// Each entry: { name: string, description: string, tags: string[] }
 let CATEGORY_TEMPLATES = [];
 
 // Load item-based config from JSON file and derive concept definitions and categories.
 async function loadGameConfig() {
     try {
-        const url = new URL('../configs/category-templates.json', import.meta.url).href;
+        const url = new URL('../configs/category-templates-new.json', import.meta.url).href;
         const response = await fetch(url);
         if (!response.ok) {
-            throw new Error(`Failed to load game config: ${response.statusText}`);
+            throw new Error(`Failed to load category templates: ${response.statusText}`);
         }
-
-        const items = await response.json();
-        if (!Array.isArray(items)) {
-            throw new Error('Game config must be an array of items.');
+        const data = await response.json();
+        if (!Array.isArray(data) || data.length === 0) {
+            throw new Error('Category templates JSON must be a non-empty array.');
         }
-
-        CONCEPT_DEFINITIONS = {};
-        const categoryMap = new Map(); // tag -> Set of item names
-
-        for (const raw of items) {
-            if (!raw || typeof raw !== 'object') continue;
-
-            const name = typeof raw.name === 'string' ? raw.name : null;
-            if (!name) continue;
-
-            const description = typeof raw.description === 'string' ? raw.description : '';
-            const rawTags = Array.isArray(raw.tags) ? raw.tags : [];
-            const tags = rawTags
-                .map(t => (typeof t === 'string' ? t : String(t)))
-                .filter(Boolean);
-
-            // Populate concept definitions for tooltips/dictionary.
-            CONCEPT_DEFINITIONS[name] = description;
-
-            // Build category membership from tags.
-            for (const tag of tags) {
-                if (!categoryMap.has(tag)) {
-                    categoryMap.set(tag, new Set());
-                }
-                categoryMap.get(tag).add(name);
+        CATEGORY_TEMPLATES = data;
+        // Populate concept definitions from description field
+        data.forEach(entry => {
+            if (entry && typeof entry.name === 'string' && typeof entry.description === 'string') {
+                CONCEPT_DEFINITIONS[entry.name] = entry.description;
             }
-        }
-
-        // Derive CATEGORY_TEMPLATES from categoryMap, keeping only categories
-        // that have at least CONCEPTS_PER_GROUP members.
-        CATEGORY_TEMPLATES = [];
-        for (const [tag, membersSet] of categoryMap.entries()) {
-            const members = Array.from(membersSet);
-            if (members.length >= CONFIG.CONCEPTS_PER_GROUP) {
-                CATEGORY_TEMPLATES.push({
-                    name: tag,
-                    members
-                });
-            }
-        }
+        });
     } catch (error) {
-        // In production we might want to surface this more clearly,
-        // but for now we fail silently and let the JS fallback handle it.
-        // console.warn('Failed to load game config:', error);
+        // If loading fails, leave CATEGORY_TEMPLATES empty; PuzzleGenerator will surface the error.
     }
 }
 

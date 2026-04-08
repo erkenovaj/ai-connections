@@ -28,9 +28,10 @@ Each group has a different difficulty level:
 4. **Watch the dog** - it reacts to your progress!
 
 #### Features
+- **Solo or Lobby** - Choose solo play (scores saved online when server runs) or create a room and invite others by link; everyone gets the same puzzle and results appear on the room leaderboard (downloadable).
 - **Normal / Advanced** - Toggle between 4-category and 3-category (with decoys) modes
 - **Timer & score** - Each game is timed; score is based on correct groups, mistakes, and speed
-- **Leaderboard** - Save your name when you win; best scores stored on your device
+- **Leaderboard** - Save your name when you win; best scores saved online (or on device if server is not running)
 - **Hover (or tap on mobile)** over concepts to see definitions when hints are ON
 - **Dictionary** with all concept explanations
 - **Sound effects** for correct, wrong, win, and lose
@@ -45,7 +46,47 @@ Your canine companion shows different emotions:
 - 🎉 **Celebrating** - When you solve puzzles
 - 😴 **Sleeping** - When the game ends
 
+### 🖥️ Running locally (Solo + Lobby + online leaderboard)
+
+The app uses **Vercel serverless API** and **Turso** for the database. To run locally:
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Add Turso env vars to .env.local (see .env.example)
+# 3. Start local dev
+npm start
+```
+
+Then open the URL shown (e.g. **http://localhost:3000**) in your browser.
+
+You’ll see a welcome screen where you can:
+- **Solo Play** – single‑player games, scores stored in Turso
+- **Create Room** – create a lobby with:
+  - Normal or Advanced mode
+  - Optional custom category templates (JSON)
+  - A configurable number of rounds (1–10)
+
+Everyone who joins the room via the link gets the **same sequence of puzzles**; each player progresses at their own pace. The room leaderboard shows per‑round results and can be downloaded as CSV.
+
+
+### ☁️ Deploying to Vercel + Turso
+
+For **serverless** hosting with no server to manage, use **Vercel** for the app and **Turso** for the database:
+
+1. **Create a Turso database** at [turso.tech](https://turso.tech) (or with CLI: `turso db create ai-connections`).
+2. **Get URL and token**: `turso db show ai-connections --url` and `turso db tokens create ai-connections`.
+3. **Deploy to Vercel**: Connect this repo in the [Vercel dashboard](https://vercel.com); set **Environment Variables**:
+   - `TURSO_DATABASE_URL` = your Turso URL
+   - `TURSO_AUTH_TOKEN` = your Turso token
+4. **Install and deploy**: Vercel will run `npm install` and deploy. The `api/` folder provides the serverless endpoints; the frontend uses the same API paths.
+
+For local testing, run `npm start` (or `vercel dev`) with a `.env.local` containing `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` (see `.env.example`).
+
 ### 🌐 Deploying to GitHub Pages
+
+GitHub Pages serves the app as **static files only**. Lobby (rooms) and online leaderboard require the API backend (e.g. deploy to Vercel with Turso, or run `vercel dev` locally).
 
 **Option A – Deploy from a branch (simplest)**  
 1. Push this repo to GitHub (include `configs/category-templates.json` so puzzles load correctly).  

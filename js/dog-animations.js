@@ -127,44 +127,13 @@ class DogAnimations {
     }
 
     createPawTrail() {
-        for (let i = 0; i < 2; i++) {
-            setTimeout(() => {
-                const paw = document.createElement('div');
-                paw.className = 'paw-print';
-                paw.textContent = '🐾';
-                paw.style.left = Math.random() * 100 + 'vw';
-                paw.style.top = Math.random() * 100 + 'vh';
-                paw.style.fontSize = '32px';
-                paw.style.zIndex = '9998';
-                document.body.appendChild(paw);
-                
-                setTimeout(() => {
-                    if (paw.parentElement) {
-                        paw.remove();
-                    }
-                }, 2000);
-            }, i * 800);
-        }
+        // Disabled - paws removed
+        return;
     }
 
     spawnBones() {
-        for (let i = 0; i < 3; i++) {
-            setTimeout(() => {
-                const bone = document.createElement('div');
-                bone.className = 'bone';
-                bone.textContent = '🦴';
-                bone.style.left = Math.random() * 100 + 'vw';
-                bone.style.fontSize = '35px';
-                bone.style.zIndex = '9998';
-                document.body.appendChild(bone);
-                
-                setTimeout(() => {
-                    if (bone.parentElement) {
-                        bone.remove();
-                    }
-                }, 3000);
-            }, i * 600);
-        }
+        // Disabled - bones removed
+        return;
     }
 
     createConfetti() {
